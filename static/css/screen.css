@@ -21,7 +21,11 @@ nav {
   background: #080;
   color: white;
   padding: .5em 1em;
-  margin: 0 0 1em;
+  margin: .3em 0;
+}
+
+.flash-error {
+  background: #800;
 }
 
 #content {

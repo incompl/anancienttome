@@ -20,6 +20,7 @@ db.once('open', function callback () {
   console.log('Connected to database. aw ye');
 });
 var User = require('./models/User.js');
+var Story = require('./models/Story.js');
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -83,7 +84,8 @@ app.configure(function() {
   app.use(passport.session());
   app.use(function(req, res, next){
     res.locals.user = req.user;
-    res.locals.flash = req.flash('info');
+    res.locals.info = req.flash('info');
+    res.locals.error = req.flash('error');
     next();
   });
   app.use(app.router);
@@ -102,11 +104,32 @@ app.get('/', function(req, res){
 });
 
 app.get('/home', ensureAuthenticated, function(req, res){
-  res.render('home');
+  Story.find({
+    owner: req.user.id
+  }, function(err, stories) {
+    if (err) {
+      req.flash('error', 'We couldn\'t retrieve your stories. Try again?');
+    }
+    res.render('home', {stories: stories});
+  });
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
   res.render('account');
+});
+
+app.get('/account/delete', ensureAuthenticated, function(req, res) {
+  User.remove(req.user, function(err) {
+    if (err) {
+      console.error(err);
+      req.flash('info', 'Woops, it wouldn\'t die. Sorry...?');
+      res.redirect('/account');
+      return;
+    }
+    req.logout();
+    req.flash('info', 'Account deleted. Goodbye forever apparently!');
+    res.redirect('/');
+  });
 });
 
 app.get('/login', function(req, res){
@@ -133,9 +156,63 @@ app.get('/new', ensureAuthenticated, function(req, res) {
 });
 
 app.post('/new/post', ensureAuthenticated, function(req, res) {
-  req.flash('info', 'A new story has begun... created "' +
-                    req.body.title + '"');
-  res.redirect('/home');
+  var success = true;
+
+  if (!req.body.title) {
+    success = false;
+    req.flash('error', 'You need a title!');
+  }
+  else if (req.body.title.length < 3) {
+    success = false;
+    req.flash('error', 'Your title needs to be longer!');
+  }
+
+  if (req.body.theme !== 'Medieval Fantasy') {
+    success = false;
+    req.flash('error', 'Invalid theme.');
+  }
+
+  if (req.body.public !== 'true') {
+    success = false;
+    req.flash('error', 'Invalid privacy.');
+  }
+
+  if (success) {
+
+    var story = new Story({
+      title: req.body.title,
+      owner: req.user.id,
+      theme: req.body.theme,
+      public: req.body.public
+    });
+    story.save(function (err, newStory) {
+      if (err) {
+        req.flash('error', 'Woops, we accidentally a database. Try again maybe?');
+        res.redirect('/new');
+      }
+      newStory.onCreate();
+      req.flash('info', 'A new story has begun... created "' +
+                      req.body.title + '"');
+      res.redirect('/home');
+    });
+
+  }
+  else {
+    res.redirect('/new');
+  }
+});
+
+app.get('/delete/:id', ensureAuthenticated, function(req, res) {
+  Story.remove({_id: req.params.id, owner: req.user.id}, function(err) {
+    if (err) {
+      console.error(err);
+      req.flash('info', 'Woops, it wouldn\'t die. Sorry...?');
+      res.redirect('/home');
+      return;
+    }
+    req.flash('info', 'Story deleted. Fin!');
+    res.redirect('/home');
+  });
 });
 
 var port = 8080;

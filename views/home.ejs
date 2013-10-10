@@ -4,16 +4,21 @@
 
   <div class="unit-60">
     <h2>My Stories</h2>
+
+    <% stories.forEach(function(story) { %>
     
-    <section class="story">
-      <h3>Example Story</h3>
+      <section class="story">
+        <h3><%= story.title %></h3>
 
-      <p>Summary / status / whatever</p>
+        <p>An Epic <%= story.theme %> Adventure Probably!</p>
 
-      <a href="#" class="btn btn-big btn-green">Write!</a>
-      <a href="#" class="btn btn-small btn-black">Edit</a>
-      <a href="#" class="btn btn-small btn-red">Delete</a>
-    </section>
+        <a href="/read/<%= story.id %>" class="btn btn-blue">Read!</a>
+        <a href="/write/<%= story.id %>" class="btn btn-green">Write!</a>
+        <a href="/edit/<%= story.id %>" class="btn btn-black">Edit</a>
+        <a href="/delete/<%= story.id %>" class="btn btn-red">Delete</a>
+      </section>
+
+    <% }); %>
   </div>
 
   <div class="unit-40">

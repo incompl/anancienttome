@@ -24,9 +24,18 @@
         <% } %>
       </div>
     </nav>
-    <% if (flash) { %>
-      <% flash.forEach(function(msg) { %>
+    <% if (info) { %>
+      <% info.forEach(function(msg) { %>
         <div class="flash">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    <% if (error) { %>
+      <% error.forEach(function(msg) { %>
+        <div class="flash flash-error">
           <div class="wrapper">
             <%= msg %>
           </div>
