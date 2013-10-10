@@ -1,11 +1,25 @@
 /* jshint node:true */
 
+// My stuff
+var keys = require('./keys.js');
+
+// Express stuff
 var express = require('express');
 var passport = require('passport');
 var util = require('util');
 var TwitterStrategy = require('passport-twitter').Strategy;
-var keys = require('./keys.js');
 var ejsLocals = require('ejs-locals');
+var flash = require('connect-flash');
+
+// Mongo stuff
+var mongoose = require('mongoose');
+mongoose.connect(keys.MONGO_CONNECTION_STRING);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function callback () {
+  console.log('Connected to database. aw ye');
+});
+var User = require('./models/User.js');
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -21,7 +35,35 @@ passport.use(new TwitterStrategy({
     callbackURL: 'http://localhost:8080/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
-    return done(null, profile);
+    User.find({
+      twitterConsumerKey: token,
+      twitterConsumerSecret: tokenSecret
+    }, function(err, users) {
+      if (err) {
+        return done(err);
+      }
+      if (users.length === 1) {
+        return done(null, users[0]);
+      }
+      else if (users.length > 1) {
+        console.error('Duplicate users for ' + profile.username);
+      }
+      else {
+        var user = new User({
+          id: profile.id,
+          name: profile.username,
+          twitterConsumerKey: token,
+          twitterConsumerSecret: tokenSecret
+        });
+        user.save(function (err, newUser) {
+          if (err) {
+            return done(err);
+          }
+          newUser.onCreate();
+          return done(null, newUser);
+        });
+      }
+    });
   }
 ));
 
@@ -35,24 +77,40 @@ app.configure(function() {
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
+  app.use(express.session({secret: 'egg salad egg burrito feast'}));
+  app.use(flash());
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(function(req, res, next){
+    res.locals.user = req.user;
+    res.locals.flash = req.flash('info');
+    next();
+  });
   app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
+  app.use(express.static(__dirname + '/static'));
 });
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/');
+}
 
 app.get('/', function(req, res){
-  res.render('index', { user: req.user });
+  res.render('index');
+});
+
+app.get('/home', ensureAuthenticated, function(req, res){
+  res.render('home');
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  res.render('account', { user: req.user });
+  res.render('account');
 });
 
 app.get('/login', function(req, res){
-  res.render('login', { user: req.user });
+  res.render('login');
 });
 
 app.get('/auth/twitter',
@@ -61,7 +119,7 @@ app.get('/auth/twitter',
 
 app.get('/auth/twitter/callback',
   passport.authenticate('twitter', {
-    successRedirect: '/',
+    successRedirect: '/home',
     failureRedirect: '/login'
   }));
 
@@ -70,13 +128,16 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
+app.get('/new', ensureAuthenticated, function(req, res) {
+  res.render('new');
+});
+
+app.post('/new/post', ensureAuthenticated, function(req, res) {
+  req.flash('info', 'A new story has begun... created "' +
+                    req.body.title + '"');
+  res.redirect('/home');
+});
+
 var port = 8080;
 app.listen(port);
-console.info('Listening on ' + port);
-
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/login');
-}
+console.info('Listening on ' + port + '. heck ya');

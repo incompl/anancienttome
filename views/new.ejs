@@ -1,0 +1,25 @@
+<% layout('layout') -%>
+
+<h2>Let's write a story...</h2>
+
+<form method="post" action="/new/post" id="new" class="forms forms-columnar">
+  <p>
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" class="width-100" value="The Legend of Grofkolkfump">
+  </p>
+  <p>
+    <label>Theme</label>
+    <select name="theme" class="width-100">
+      <option>Medieval Fantasy</option>
+    </select>
+  </p>
+  <p>
+    <label>Who can join?</label>
+    <select name="public" class="width-100">
+      <option>Anybody</option>
+    </select>
+  </p>
+  <p>
+    <input type="submit" class="btn btn-blue" value="Create!">
+  </p>
+</form>

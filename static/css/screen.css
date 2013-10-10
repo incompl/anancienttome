@@ -1,0 +1,39 @@
+header {
+  padding: 1em;
+}
+
+h1 {
+  margin: 0;
+}
+
+nav {
+  padding: .5em 1em;
+  font-size: 1.2em;
+  background: #ddd;
+}
+
+.wrapper {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.flash {
+  background: #080;
+  color: white;
+  padding: .5em 1em;
+  margin: 0 0 1em;
+}
+
+#content {
+  padding: 1em;
+}
+
+.story {
+  background: #ccf;
+  padding: 1em;
+}
+
+#new {
+  max-width: 400px;
+  margin: 0 auto;
+}

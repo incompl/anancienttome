@@ -13,6 +13,8 @@
     "passport": "~0.1.17",
     "passport-twitter": "~1.0.2",
     "ejs": "~0.8.4",
-    "ejs-locals": "~1.0.2"
+    "ejs-locals": "~1.0.2",
+    "mongoose": "~3.6.20",
+    "connect-flash": "~0.1.1"
   }
 }

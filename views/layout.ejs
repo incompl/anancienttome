@@ -1,21 +1,42 @@
 <!doctype html>
 <html>
   <head>
-    <title>Passport-Twitter Example</title>
+    <title>Stories...</title>
+    <link rel="stylesheet" href="/css/kube.min.css">
+    <link rel="stylesheet" href="/css/screen.css">
   </head>
   <body>
-    <% if (!user) { %>
-      <p>
-      <a href="/">Home</a> | 
-      <a href="/login">Log In</a>
-      </p>
-    <% } else { %>
-      <p>
-      <a href="/">Home</a> | 
-      <a href="/account">Account</a> | 
-      <a href="/logout">Log Out</a>
-      </p>
+    <header>
+      <div class="wrapper">
+        <h1>Stories...</h1>
+      </div>
+    </header>
+    <nav>
+      <div class="wrapper">
+        <% if (!user) { %>
+          <a href="/">Home</a> | 
+          <a href="/auth/twitter">Log in with Twitter</a>
+        <% } else { %>
+          <a href="/home">Home</a> | 
+          <a href="/account">Account</a> | 
+          <a href="/logout">Log out</a> |
+          Logged in as <%= user.name %>
+        <% } %>
+      </div>
+    </nav>
+    <% if (flash) { %>
+      <% flash.forEach(function(msg) { %>
+        <div class="flash">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
     <% } %>
-    <%- body %>
+    <div id="content">
+      <div class="wrapper">
+        <%- body %>
+      </div>
+    </div>
   </body>
 </html>
