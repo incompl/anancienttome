@@ -1,0 +1,10 @@
+<% layout('layout') -%>
+
+<% if (!user) { %>
+  <h2>Welcome!</h2>
+  <p>
+    <a href="/auth/twitter">Log in</a>
+  </p>
+<% } else { %>
+  <h2>Hello, <%= user.username %>.</h2>
+<% } %>

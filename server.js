@@ -1,32 +1,82 @@
 /* jshint node:true */
 
-var keys = require('keys.js');
-
 var express = require('express');
-var app = express();
-
 var passport = require('passport');
+var util = require('util');
 var TwitterStrategy = require('passport-twitter').Strategy;
+var keys = require('./keys.js');
+var ejsLocals = require('ejs-locals');
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
 
 passport.use(new TwitterStrategy({
     consumerKey: keys.TWITTER_CONSUMER_KEY,
     consumerSecret: keys.TWITTER_CONSUMER_SECRET,
-    callbackURL: "http://www.example.com/auth/twitter/callback"
+    callbackURL: 'http://localhost:8080/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
-    User.findOrCreate(..., function(err, user) {
-      if (err) { return done(err); }
-      done(null, user);
-    });
+    return done(null, profile);
   }
 ));
 
-app.get('/', function(req, res){
-  var body = 'Hello World';
-  res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Content-Length', body.length);
-  res.end(body);
+var app = express();
+
+app.configure(function() {
+  app.engine('ejs', ejsLocals);
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'ejs');
+  app.use(express.logger());
+  app.use(express.cookieParser());
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.session({ secret: 'keyboard cat' }));
+  app.use(passport.initialize());
+  app.use(passport.session());
+  app.use(app.router);
+  app.use(express.static(__dirname + '/public'));
 });
 
-app.listen(80);
-console.log('Running');
+
+app.get('/', function(req, res){
+  res.render('index', { user: req.user });
+});
+
+app.get('/account', ensureAuthenticated, function(req, res){
+  res.render('account', { user: req.user });
+});
+
+app.get('/login', function(req, res){
+  res.render('login', { user: req.user });
+});
+
+app.get('/auth/twitter',
+  passport.authenticate('twitter'),
+  function(req, res) {});
+
+app.get('/auth/twitter/callback',
+  passport.authenticate('twitter', {
+    successRedirect: '/',
+    failureRedirect: '/login'
+  }));
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
+var port = 8080;
+app.listen(port);
+console.info('Listening on ' + port);
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
