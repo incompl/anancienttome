@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var chapterSchema = mongoose.Schema({
   story: String,
   author: String,
+  authorName: String,
   created: Date,
   text: String
 });

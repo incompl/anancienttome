@@ -29,7 +29,24 @@
       <section class="story">
         <h3><%= story.title %></h3>
 
-        <p>Theme: <%= story.theme %> Read: <%= story.read %> Write: <%= story.write %></p>
+        <div class="story-info">
+          <span><%= story.theme %></span>
+
+          <% if (story.read === 'public') { %>
+            <span>Anyone can read</span>
+          <% } else {%>
+            <span>Must be invited to read</span>
+          <% } %>
+
+          <% if (story.write === 'public') { %>
+            <span>Anyone can write</span>
+          <% } else if (story.write === 'invite') {%>
+            <span>Must be invited to write</span>
+          <% } else { %>
+            <span>Only you can write</span>
+          <% } %>
+          
+        </div>
 
         <a href="/read/<%= story.id %>" class="btn btn-black">Read</a>
         <a href="/write/<%= story.id %>" class="btn btn-blue">Write</a>
@@ -56,7 +73,16 @@
       <section class="story">
         <h3><%= watching.title %></h3>
 
-        <p>Theme: <%= watching.theme %> Write: <%= watching.write %></p>
+        <div class="story-info">
+          <span><%= watching.theme %></span>
+          <span>
+            <% if (watching.canWrite) { %>
+              You can write
+            <% } else { %>
+              You can only read
+            <% } %>
+          </span>
+        </div>
 
         <a href="/read/<%= watching.story %>" class="btn btn-black">Read</a>
 

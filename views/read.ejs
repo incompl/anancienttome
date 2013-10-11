@@ -12,7 +12,7 @@
 
 <% if (chapters.length < 1) { %>
 
-  Nothing has yet been written.
+  <div class="no-chapters">Nothing has yet been written.</div>
 
 <% } else {%>
 
@@ -20,13 +20,19 @@
 
 <% } %>
 
-<% chapters.forEach(function(chapter) { %>
+<% chapters.forEach(function(chapter, i) { %>
 
   <section class="chapter">
 
+    <h3>Chapter <%= i + 1%></h3>
+
     <p><%= chapter.text %></p>
 
-    <p>By user id <%= chapter.author %> on <%= chapter.created %></p>
+    <div class="chapter-info">
+
+      by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <%= chapter.created.toUTCString() %>
+
+    </div>
 
   </section>
 

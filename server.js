@@ -40,7 +40,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new TwitterStrategy({
     consumerKey: keys.TWITTER_CONSUMER_KEY,
     consumerSecret: keys.TWITTER_CONSUMER_SECRET,
-    callbackURL: 'http://localhost:8080/auth/twitter/callback'
+    callbackURL: 'http://stories.jit.su/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
     User.find({
@@ -359,6 +359,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
       chapter = new Chapter({
         story: req.params.id,
         author: req.user.id,
+        authorName: req.user.name,
         created: new Date(),
         text: req.body.chapter
       });

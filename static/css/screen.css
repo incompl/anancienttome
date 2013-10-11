@@ -50,6 +50,16 @@ nav {
   margin: 1em 0;
 }
 
+.story-info {
+  margin: 0 0 1em;
+}
+
+.story-info>span {
+  background: hsla(0, 0%, 100%, .6);
+  padding: 3px;
+  margin: 3px 3px 3px 0;
+}
+
 #new {
   max-width: 400px;
   margin: 0 auto;
@@ -74,7 +84,15 @@ nav {
 
 .chapter {
   padding: .5em 0;
-  border-bottom: solid gray 2px;
+}
+
+.chapter-info {
+  color: #A0A0A0;
+}
+
+.no-chapters {
+  margin: 1em 0 0;
+  font-size: 1.5em;
 }
 
 .chapter-links {
