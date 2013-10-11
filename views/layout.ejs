@@ -1,26 +1,28 @@
 <!doctype html>
 <html>
   <head>
-    <title>Stories...</title>
+    <title>Stories</title>
     <link rel="stylesheet" href="/css/kube.min.css">
     <link rel="stylesheet" href="/css/screen.css">
+    <script src="/bower_components/jquery/jquery.min.js"></script>
+    <script src="/bower_components/lodash/dist/lodash.min.js"></script>
+    <script src="/js/global.js"></script>
   </head>
   <body>
     <header>
       <div class="wrapper">
-        <h1>Stories...</h1>
+        <h1>Stories</h1>
       </div>
     </header>
     <nav>
       <div class="wrapper">
         <% if (!user) { %>
-          <a href="/">Home</a> | 
           <a href="/auth/twitter">Log in with Twitter</a>
         <% } else { %>
           <a href="/home">Home</a> | 
-          <a href="/account">Account</a> | 
-          <a href="/logout">Log out</a> |
-          Logged in as <%= user.name %>
+          <a href="/search">Search</a> | 
+          <a href="/account"><%= user.name %></a> | 
+          <a href="/logout">Log out</a>
         <% } %>
       </div>
     </nav>

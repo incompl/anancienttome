@@ -1,0 +1,38 @@
+<% layout('layout') -%>
+
+<h1><%= story.title %></h1>
+
+<div>
+  <a href="/watch/<%= story.id %>" class="btn">Watch</a>
+</div>
+
+<% if (chapters.length < 1) { %>
+
+  Nothing has yet been written.
+
+<% } else {%>
+
+  <h2>The Premier <%= story.theme %> Epic</h2>
+
+<% } %>
+
+<% chapters.forEach(function(chapter) { %>
+
+  <section class="chapter">
+
+    <p><%= chapter.text %></p>
+
+    <p>By user id <%= chapter.author %> on <%= chapter.created %></p>
+
+  </section>
+
+<% }); %>
+
+
+<div class="chapter-links"><a href="/write/<%= story.id %>">
+  <% if (chapters.length < 1) { %>
+    Write the first chapter...
+  <% } else { %>
+    Write the next chapter...
+  <% } %>
+</a></div>

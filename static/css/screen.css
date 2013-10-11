@@ -6,6 +6,14 @@ h1 {
   margin: 0;
 }
 
+h2 {
+  margin: .5em 0;
+}
+
+p {
+  margin: 1em 0;
+}
+
 nav {
   padding: .5em 1em;
   font-size: 1.2em;
@@ -35,9 +43,31 @@ nav {
 .story {
   background: #ccf;
   padding: 1em;
+  margin: 1em 0;
 }
 
 #new {
   max-width: 400px;
   margin: 0 auto;
+}
+
+#char-limit {
+  color: green;
+}
+
+#char-limit.invalid {
+  color: red;
+}
+
+#char-limit.emphasis {
+  background: yellow;
+}
+
+.chapter {
+  padding: .5em 0;
+  border-bottom: solid gray 2px;
+}
+
+.chapter-links {
+  margin: 1em 0 0;
 }

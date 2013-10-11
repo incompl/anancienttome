@@ -1,0 +1,30 @@
+<% layout('layout') -%>
+
+<% if (lastChapter === null) { %>
+
+  <h2>It is time for <%= story.title %> to begin...</h2>
+
+<% } else { %>
+
+  <h2>Last time, on <a href="/read/<%= story.id %>"><%= story.title %></a>...</h2>
+
+  
+
+  <p><%= lastChapter.text %></p>
+
+  <h2>And now, a dramatic continuation...</h2>
+
+<% } %>
+
+<form id="chapter-form" method="post" action="/write/<%= story.id %>/post" class="forms">
+
+  <label>
+    <textarea id="chapter" name="chapter" rows="10" class="width-100"></textarea>
+    <span id="char-limit"></span>
+  </label>
+
+  <input type="submit" class="btn btn-blue btn-big" value="Save">
+
+</form>
+
+<script src="/js/write.js"></script>

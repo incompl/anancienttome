@@ -1,0 +1,39 @@
+<% layout('layout') -%>
+
+<h2>Search for stories to read and write</h2>
+
+<form class="forms" method="get" action="/search">
+
+  <p class="forms-inline">
+    <span class="btn-group">
+      <input name="query" type="text" size="40" class="input-search">
+      <button class="btn btn-round">Search</button>
+    </span>
+  </p>
+
+  <% if (results) { %>
+
+    <% if (results.length < 1) { %>
+
+      <p>No results</p>
+
+    <% } else { %>
+
+      <table class="width-100 table-striped">
+
+      <% results.forEach(function(story) { %>
+
+        <tr>
+          <td><a href="/read/<%= story.id %>"><%= story.title %></a></td>
+          <td><%= story.theme %></td>
+        </tr>
+
+      <% }); %>
+
+    </table>
+
+    <% } %>
+
+  <% } %>
+
+</form>

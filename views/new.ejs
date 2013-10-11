@@ -10,13 +10,24 @@
   <p>
     <label>Theme</label>
     <select name="theme" class="width-100">
-      <option>Medieval Fantasy</option>
+      <% themes.forEach(function(theme) { %>
+        <option><%= theme %></option>
+      <% }); %>
     </select>
   </p>
   <p>
-    <label>Who can join?</label>
-    <select name="public" class="width-100">
-      <option value="true">Anybody</option>
+    <label>Who can read it?</label>
+    <select name="read" class="width-100">
+      <option value="public">Anybody</option>
+      <option value="invite">People I Invite</option>
+    </select>
+  </p>
+  <p>
+    <label>Who can write it?</label>
+    <select name="write" class="width-100">
+      <option value="public">Anybody</option>
+      <option selected value="invite">People I Invite</option>
+      <option value="private">Just Me</option>
     </select>
   </p>
   <p>

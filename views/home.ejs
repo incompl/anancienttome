@@ -5,17 +5,43 @@
   <div class="unit-60">
     <h2>My Stories</h2>
 
+    <% if (stories.length < 1) { %>
+
+      No stories yet. Create one to get started!
+
+    <% } %>
+
     <% stories.forEach(function(story) { %>
     
       <section class="story">
         <h3><%= story.title %></h3>
 
-        <p>An Epic <%= story.theme %> Adventure Probably!</p>
+        <p>An Epic <%= story.theme %> Adventure Maybe!</p>
 
-        <a href="/read/<%= story.id %>" class="btn btn-blue">Read!</a>
-        <a href="/write/<%= story.id %>" class="btn btn-green">Write!</a>
-        <a href="/edit/<%= story.id %>" class="btn btn-black">Edit</a>
-        <a href="/delete/<%= story.id %>" class="btn btn-red">Delete</a>
+        <a href="/read/<%= story.id %>" class="btn btn-black">Read!</a>
+        <a href="/write/<%= story.id %>" class="btn btn-blue">Write!</a>
+        <a href="/delete/<%= story.id %>" class="btn btn-red confirm">Delete</a>
+      </section>
+
+    <% }); %>
+
+    <h2>Watching</h2>
+
+    <% if (watching.length < 1) { %>
+
+      You're not watching any stories.
+
+    <% } %>
+
+    <% watching.forEach(function(watching) { %>
+    
+      <section class="story">
+        <h3><%= watching.title %></h3>
+
+        <p>An Epic <%= watching.theme %> Adventure Probably!</p>
+
+        <a href="/read/<%= watching.story %>" class="btn btn-black">Read!</a>
+        <a href="/write/<%= watching.story %>" class="btn btn-blue">Write!</a>
       </section>
 
     <% }); %>

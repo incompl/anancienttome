@@ -3,6 +3,10 @@
 // My stuff
 var keys = require('./keys.js');
 
+// Someone else's stuff
+var _ = require('lodash');
+var async = require('async');
+
 // Express stuff
 var express = require('express');
 var passport = require('passport');
@@ -21,6 +25,8 @@ db.once('open', function callback () {
 });
 var User = require('./models/User.js');
 var Story = require('./models/Story.js');
+var Chapter = require('./models/Chapter.js');
+var Watching = require('./models/Watching.js');
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -68,6 +74,11 @@ passport.use(new TwitterStrategy({
   }
 ));
 
+var themes = [
+  'Medieval Fantasy',
+  'Science Fiction'
+];
+
 var app = express();
 
 app.configure(function() {
@@ -96,6 +107,9 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
+  else {
+    req.user = null;
+  }
   res.redirect('/');
 }
 
@@ -104,13 +118,18 @@ app.get('/', function(req, res){
 });
 
 app.get('/home', ensureAuthenticated, function(req, res){
-  Story.find({
-    owner: req.user.id
-  }, function(err, stories) {
+  var query = Story.find({owner: req.user.id}, function(err, stories) {
     if (err) {
-      req.flash('error', 'We couldn\'t retrieve your stories. Try again?');
+      req.flash('error', 'We couldn\'t retrieve your stories. Refresh?');
+      res.render('home', {stories: [], watching: []});
     }
-    res.render('home', {stories: stories});
+    Watching.find({user: req.user.id}, function(err, watching) {
+      if (err) {
+        req.flash('error', 'We couldn\'t retrieve your watched stories. Refresh?');
+        res.render('home', {stories: stories, watching: []});
+      }
+      res.render('home', {stories: stories, watching: watching});
+    });
   });
 });
 
@@ -152,7 +171,7 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/new', ensureAuthenticated, function(req, res) {
-  res.render('new');
+  res.render('new', {themes: themes});
 });
 
 app.post('/new/post', ensureAuthenticated, function(req, res) {
@@ -167,7 +186,7 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
     req.flash('error', 'Your title needs to be longer!');
   }
 
-  if (req.body.theme !== 'Medieval Fantasy') {
+  if (!_.contains(themes, req.body.theme)) {
     success = false;
     req.flash('error', 'Invalid theme.');
   }
@@ -189,9 +208,10 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
       if (err) {
         req.flash('error', 'Woops, we accidentally a database. Try again maybe?');
         res.redirect('/new');
+        return;
       }
       newStory.onCreate();
-      req.flash('info', 'A new story has begun... created "' +
+      req.flash('info', 'A new story has begun... "' +
                       req.body.title + '"');
       res.redirect('/home');
     });
@@ -202,16 +222,172 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
   }
 });
 
+app.get('/read/:id', ensureAuthenticated, function(req, res) {
+  Story.findById(req.params.id, function(err, story) {
+    if (err) {
+      req.flash('error', 'I\'ve never heard of that tale...');
+      res.redirect('/home');
+    }
+    else {
+      Chapter.find({
+        story: req.params.id
+      }, function(err, chapters) {
+        if (err) {
+          req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
+          res.redirect('/home');
+          return;
+        }
+        res.render('read', {story: story, chapters: chapters});
+      });
+    }
+  });
+});
+
+app.get('/write/:id', ensureAuthenticated, function(req, res) {
+  Story.findById(req.params.id, function(err, story) {
+    if (err) {
+      req.flash('error', 'I\'ve never heard of that tale...');
+      res.redirect('/home');
+    }
+    else {
+      Chapter.findOne({
+        story: req.params.id,
+
+      }, {}, {sort: {'created': -1}}, function(err, lastChapter) {
+        if (err) {
+          req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
+          res.redirect('/home');
+          return;
+        }
+        res.render('write', {story: story, lastChapter: lastChapter});
+      });
+    }
+  });
+});
+
+app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
+
+  var matches = req.body.chapter.match(/\w+/g);
+
+  if (!matches || matches.length < 10 || matches.length > 200) {
+    req.flash('error', 'There has been an error.');
+    res.redirect('/write/' + req.params.id);
+    return;
+  }
+
+  Story.findById(req.params.id, function(err, story) {
+    var chapter;
+    if (err) {
+      req.flash('error', 'There has been an error.');
+      res.redirect('/write/' + req.params.id);
+    }
+    if (story.owner !== req.user.id &&
+        story.public !== 'public') {
+      req.flash('error', 'You aren\'t allowed to author this story.');
+      res.redirect('/write/' + req.params.id);
+    }
+    else {
+      chapter = new Chapter({
+        story: req.params.id,
+        author: req.user.id,
+        created: new Date(),
+        text: req.body.chapter
+      });
+      chapter.save(function (err, newChapter) {
+        if (err) {
+          req.flash('error', 'Sorry, I couldn\'t save it. Try again?');
+          res.redirect('/home');
+        }
+        newChapter.onCreate();
+        req.flash('info', 'A new chapter has been written...');
+        res.redirect('/read/' + req.params.id);
+      });
+    }
+  });
+});
+
 app.get('/delete/:id', ensureAuthenticated, function(req, res) {
-  Story.remove({_id: req.params.id, owner: req.user.id}, function(err) {
+  Chapter.remove({story: req.params.id}, function(err) {
     if (err) {
       console.error(err);
-      req.flash('info', 'Woops, it wouldn\'t die. Sorry...?');
+      req.flash('info', 'Couldn\'t delete existing chapters. Weird?');
       res.redirect('/home');
       return;
     }
-    req.flash('info', 'Story deleted. Fin!');
-    res.redirect('/home');
+    Story.remove({_id: req.params.id, owner: req.user.id}, function(err) {
+      if (err) {
+        console.error(err);
+        req.flash('info', 'Woops, it wouldn\'t die. Sorry...?');
+        res.redirect('/home');
+        return;
+      }
+      req.flash('info', 'Story deleted. Fin!');
+      res.redirect('/home');
+    });
+  });
+});
+
+app.get('/search', ensureAuthenticated, function(req, res) {
+  if (req.query.query !== undefined) {
+    var q = Story.find({public: 'true'})
+    .limit(20)
+    .regex('title', new RegExp(req.query.query, 'i'));
+    q.execFind(function(err, stories) {
+      if (err) {
+        req.flash('error', 'Could not search for some reason.');
+        res.render('search', {results: []});
+      }
+      res.render('search', {results: stories});
+      return;
+    });
+  }
+  else {
+    res.render('search', {results: null});
+  }
+});
+
+app.get('/watch/:id', ensureAuthenticated, function(req, res) {
+  async.parallel([
+    function(callback) {
+      Watching.findOne({story: req.params.id}, callback);
+    },
+    function(callback) {
+      Story.findOne({_id: req.params.id}, callback);
+    }
+  ],
+  function(err, results) {
+    if (err) {
+      req.flash('error', 'Could not watch this story. Weird.');
+    }
+    else {
+      var watching = results[0];
+      var story = results[1];
+      if (watching) {
+        req.flash('info', 'You\'re already watching ' + story.title);
+        res.redirect('/read/' + req.params.id);
+      }
+      else if (!story) {
+        req.flash('error', 'Couldn\'t find that story.');
+        res.redirect('/home');
+      }
+      else {
+        var newWatching = new Watching({
+          user: req.user.id,
+          story: req.params.id,
+          title: story.title,
+          theme: story.theme
+        });
+        newWatching.save(function (err, newUser) {
+          if (err) {
+            req.flash('error', 'Couldn\'t watch that story.');
+          }
+          else {
+            req.flash('info', 'Now watching ' + story.title);
+            res.redirect('/read/' + req.params.id);
+          }
+        });
+      }
+    }
   });
 });
 
