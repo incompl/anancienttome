@@ -86,7 +86,6 @@ app.configure(function() {
   app.engine('ejs', ejsLocals);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
-  app.use(express.logger());
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -102,6 +101,7 @@ app.configure(function() {
   });
   app.use(app.router);
   app.use(express.static(__dirname + '/static'));
+  app.use(express.logger());
 });
 
 function ensureAuthenticated(req, res, next) {
@@ -127,17 +127,33 @@ app.get('/home', ensureAuthenticated, function(req, res) {
       Watching.find({user: req.user.id}, callback);
     },
     function(callback) {
-      Invite.find({invited: req.user.name, accepted: false}, callback);
+      Invite.find({invited: req.user.name}, callback);
     }
   ],
   function(err, results) {
     if (err) {
       console.log(err);
     }
+
+    var stories = results[0];
+    var watching = results[1];
+    var invites = results[2];
+
+    watching.forEach(function(w) {
+      var invited = _.find(invites, {
+        story: w.story,
+        accepted: true
+      }) !== undefined;
+      if (w.write === 'public' ||
+         (w.write === 'invite' && invited)) {
+        w.canWrite = true;
+      }
+    });
+
     res.render('home', {
-      stories: results[0],
-      watching: results[1],
-      invites: results[2]
+      stories: stories,
+      watching: watching,
+      newInvites: _.where(invites, {accepted: false})
     });
   });
 });
@@ -270,7 +286,23 @@ app.get('/read/:id', ensureAuthenticated, function(req, res) {
           res.redirect('/home');
           return;
         }
-        res.render('read', {story: story, chapters: chapters});
+        Invite.findOne({
+          story: story.id,
+          invited: req.user.id,
+          accepted: true
+        }, function(err, invite) {
+          if (err) {
+            req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
+            res.redirect('/home');
+            return;
+          }
+          var invited = invite !== null;
+          var canWrite = story.owner === req.user.id ||
+                         story.write === 'public' ||
+                         (story.write === 'invite' && invited);
+
+          res.render('read', {story: story, chapters: chapters, canWrite: canWrite});
+        });
       });
     }
   });
@@ -478,9 +510,6 @@ app.get('/invite/:id', ensureAuthenticated, function(req, res) {
   });
 });
 
-// TODO confirm that ID exists
-// TODO confirm that the story can be invited to
-// TODO put story title
 app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
   async.parallel([
     function(callback) {
@@ -520,6 +549,10 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
     else if (!story) {
       req.flash('error', 'That story doesn\'t exist!');
       res.redirect('/home');
+    }
+    else if (story.write !== 'invite') {
+      req.flash('error', 'This story doesn\'t do invitations.');
+      res.redirect('/invite/' + req.params.id);
     }
     else {
       newInvite = new Invite({
@@ -597,6 +630,19 @@ app.get('/invite/reject/:id', ensureAuthenticated, function(req, res) {
       req.flash('info', 'Politely declined.');
     }
     res.redirect('/home');
+  });
+});
+
+app.get('/random', ensureAuthenticated, function(req, res) {
+  Story.random(function(err, story) {
+    if (err || story === null) {
+      if (err) console.error(err);
+      req.flash('error', 'Sorry, they were all so awesome I couldn\'t choose!');
+      res.redirect('/home');
+    }
+    else {
+      res.redirect('/read/' + story.id);
+    }
   });
 });
 

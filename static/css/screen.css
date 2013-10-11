@@ -20,6 +20,10 @@ nav {
   background: #ddd;
 }
 
+.side-menu {
+  float: right;
+}
+
 .wrapper {
   max-width: 780px;
   margin: 0 auto;

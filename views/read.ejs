@@ -1,14 +1,14 @@
 <% layout('layout') -%>
 
-<h1><%= story.title %></h1>
-
 <% if (story.owner !== user.id) { %>
 
-  <div>
+  <div class="side-menu">
     <a href="/watch/<%= story.id %>" class="btn">Watch</a>
   </div>
 
 <% } %>
+
+<h1><%= story.title %></h1>
 
 <% if (chapters.length < 1) { %>
 
@@ -33,8 +33,7 @@
 <% }); %>
 
 
-<% if (story.owner === user.id ||
-       story.write === 'public') { %>
+<% if (canWrite) { %>
   <div class="chapter-links"><a href="/write/<%= story.id %>">
     <% if (chapters.length < 1) { %>
       Write the first chapter...

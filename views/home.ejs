@@ -4,9 +4,9 @@
 
   <div class="unit-60">
 
-    <% if (invites.length > 0) { %>
+    <% if (newInvites.length > 0) { %>
       <h2>You have new invites!</h2>
-      <% invites.forEach(function(invite) { %>
+      <% newInvites.forEach(function(invite) { %>
         <div>
           Invited to <%= invite.title %>
           by <%= invite.from %>
@@ -34,7 +34,7 @@
         <a href="/read/<%= story.id %>" class="btn btn-black">Read</a>
         <a href="/write/<%= story.id %>" class="btn btn-blue">Write</a>
 
-        <% if (story.write !== 'private') { %>
+        <% if (story.write === 'invite') { %>
           <a href="/invite/<%= story.id %>" class="btn">Invite</a>
         <% } %>
         
@@ -60,7 +60,7 @@
 
         <a href="/read/<%= watching.story %>" class="btn btn-black">Read</a>
 
-        <% if (watching.write === 'public') { %>
+        <% if (watching.canWrite) { %>
           <a href="/write/<%= watching.story %>" class="btn btn-blue">Write</a>
         <% } %>
 
