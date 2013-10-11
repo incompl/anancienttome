@@ -51,6 +51,11 @@ nav {
   margin: 0 auto;
 }
 
+#invite {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 #char-limit {
   color: green;
 }

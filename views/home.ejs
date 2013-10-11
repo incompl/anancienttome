@@ -3,6 +3,19 @@
 <div class="units-row">
 
   <div class="unit-60">
+
+    <% if (invites.length > 0) { %>
+      <h2>You have new invites!</h2>
+      <% invites.forEach(function(invite) { %>
+        <div>
+          Invited to <%= invite.title %>
+          by <%= invite.from %>
+          <a href="/invite/accept/<%= invite.id %>">accept</a> |
+          <a href="/invite/reject/<%= invite.id %>">reject</a>
+        </div>
+      <% }); %>
+    <% } %>
+
     <h2>My Stories</h2>
 
     <% if (stories.length < 1) { %>
@@ -16,10 +29,15 @@
       <section class="story">
         <h3><%= story.title %></h3>
 
-        <p>An Epic <%= story.theme %> Adventure Maybe!</p>
+        <p>Theme: <%= story.theme %> Read: <%= story.read %> Write: <%= story.write %></p>
 
-        <a href="/read/<%= story.id %>" class="btn btn-black">Read!</a>
-        <a href="/write/<%= story.id %>" class="btn btn-blue">Write!</a>
+        <a href="/read/<%= story.id %>" class="btn btn-black">Read</a>
+        <a href="/write/<%= story.id %>" class="btn btn-blue">Write</a>
+
+        <% if (story.write !== 'private') { %>
+          <a href="/invite/<%= story.id %>" class="btn">Invite</a>
+        <% } %>
+        
         <a href="/delete/<%= story.id %>" class="btn btn-red confirm">Delete</a>
       </section>
 
@@ -38,10 +56,15 @@
       <section class="story">
         <h3><%= watching.title %></h3>
 
-        <p>An Epic <%= watching.theme %> Adventure Probably!</p>
+        <p>Theme: <%= watching.theme %> Write: <%= watching.write %></p>
 
-        <a href="/read/<%= watching.story %>" class="btn btn-black">Read!</a>
-        <a href="/write/<%= watching.story %>" class="btn btn-blue">Write!</a>
+        <a href="/read/<%= watching.story %>" class="btn btn-black">Read</a>
+
+        <% if (watching.write === 'public') { %>
+          <a href="/write/<%= watching.story %>" class="btn btn-blue">Write</a>
+        <% } %>
+
+        <a href="/unwatch/<%= watching.story %>" class="btn btn-orange">Unwatch</a>
       </section>
 
     <% }); %>

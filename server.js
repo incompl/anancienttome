@@ -27,6 +27,7 @@ var User = require('./models/User.js');
 var Story = require('./models/Story.js');
 var Chapter = require('./models/Chapter.js');
 var Watching = require('./models/Watching.js');
+var Invite = require('./models/Invite.js');
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -117,18 +118,26 @@ app.get('/', function(req, res){
   res.render('index');
 });
 
-app.get('/home', ensureAuthenticated, function(req, res){
-  var query = Story.find({owner: req.user.id}, function(err, stories) {
-    if (err) {
-      req.flash('error', 'We couldn\'t retrieve your stories. Refresh?');
-      res.render('home', {stories: [], watching: []});
+app.get('/home', ensureAuthenticated, function(req, res) {
+  async.parallel([
+    function(callback) {
+      Story.find({owner: req.user.id}, callback);
+    },
+    function(callback) {
+      Watching.find({user: req.user.id}, callback);
+    },
+    function(callback) {
+      Invite.find({invited: req.user.name, accepted: false}, callback);
     }
-    Watching.find({user: req.user.id}, function(err, watching) {
-      if (err) {
-        req.flash('error', 'We couldn\'t retrieve your watched stories. Refresh?');
-        res.render('home', {stories: stories, watching: []});
-      }
-      res.render('home', {stories: stories, watching: watching});
+  ],
+  function(err, results) {
+    if (err) {
+      console.log(err);
+    }
+    res.render('home', {
+      stories: results[0],
+      watching: results[1],
+      invites: results[2]
     });
   });
 });
@@ -185,15 +194,33 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
     success = false;
     req.flash('error', 'Your title needs to be longer!');
   }
+  else if (req.body.title.length > 80) {
+    success = false;
+    req.flash('error', 'Your title needs to be shorter!');
+  }
 
   if (!_.contains(themes, req.body.theme)) {
     success = false;
     req.flash('error', 'Invalid theme.');
   }
 
-  if (req.body.public !== 'true') {
+  if (req.body.read !== 'public' &&
+      req.body.read !== 'invite') {
     success = false;
-    req.flash('error', 'Invalid privacy.');
+    req.flash('error', 'Unsupported read access level. *robot dance*');
+  }
+
+  if (req.body.write !== 'public' &&
+      req.body.write !== 'invite' &&
+      req.body.write !== 'private') {
+    success = false;
+    req.flash('error', 'Unsupported write access level. *robot dance*');
+  }
+
+  if (req.body.read === 'invite' &&
+      req.body.write === 'public') {
+    success = false;
+    req.flash('error', 'You can\'t have read by invite and writing public.');
   }
 
   if (success) {
@@ -202,7 +229,8 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
       title: req.body.title,
       owner: req.user.id,
       theme: req.body.theme,
-      public: req.body.public
+      read: req.body.read,
+      write: req.body.write
     });
     story.save(function (err, newStory) {
       if (err) {
@@ -225,7 +253,12 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
 app.get('/read/:id', ensureAuthenticated, function(req, res) {
   Story.findById(req.params.id, function(err, story) {
     if (err) {
-      req.flash('error', 'I\'ve never heard of that tale...');
+      console.log(err);
+      req.flash('error', 'I couldn\'t find that story, weird...');
+      res.redirect('/home');
+    }
+    if (!story) {
+      req.flash('error', 'I couldn\'t find that story, weird...');
       res.redirect('/home');
     }
     else {
@@ -246,7 +279,11 @@ app.get('/read/:id', ensureAuthenticated, function(req, res) {
 app.get('/write/:id', ensureAuthenticated, function(req, res) {
   Story.findById(req.params.id, function(err, story) {
     if (err) {
-      req.flash('error', 'I\'ve never heard of that tale...');
+      req.flash('error', 'There has been an error, hmm....');
+      res.redirect('/home');
+    }
+    else if (!story) {
+      req.flash('error', 'I couldn\'t find that story, weird...');
       res.redirect('/home');
     }
     else {
@@ -307,29 +344,33 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/delete/:id', ensureAuthenticated, function(req, res) {
-  Chapter.remove({story: req.params.id}, function(err) {
+  async.parallel([
+    function(callback) {
+      Watching.remove({story: req.params.id}, callback);
+    },
+    function(callback) {
+      Chapter.remove({story: req.params.id}, callback);
+    },
+    function(callback) {
+      Story.remove({_id: req.params.id, owner: req.user.id}, callback);
+    }
+  ],
+  function(err, results) {
     if (err) {
       console.error(err);
-      req.flash('info', 'Couldn\'t delete existing chapters. Weird?');
+      req.flash('error', 'Couldn\'t delete the story. Sorry...?');
       res.redirect('/home');
-      return;
     }
-    Story.remove({_id: req.params.id, owner: req.user.id}, function(err) {
-      if (err) {
-        console.error(err);
-        req.flash('info', 'Woops, it wouldn\'t die. Sorry...?');
-        res.redirect('/home');
-        return;
-      }
+    else {
       req.flash('info', 'Story deleted. Fin!');
       res.redirect('/home');
-    });
+    }
   });
 });
 
 app.get('/search', ensureAuthenticated, function(req, res) {
   if (req.query.query !== undefined) {
-    var q = Story.find({public: 'true'})
+    var q = Story.find({read: 'public'})
     .limit(20)
     .regex('title', new RegExp(req.query.query, 'i'));
     q.execFind(function(err, stories) {
@@ -356,13 +397,17 @@ app.get('/watch/:id', ensureAuthenticated, function(req, res) {
     }
   ],
   function(err, results) {
+    var watching = results[0];
+    var story = results[1];
     if (err) {
       req.flash('error', 'Could not watch this story. Weird.');
     }
     else {
-      var watching = results[0];
-      var story = results[1];
-      if (watching) {
+      if (story.owner === req.user.id) {
+        req.flash('info', 'You are automatically watching your own stories.');
+        res.redirect('/read/' + req.params.id);
+      }
+      else if (watching) {
         req.flash('info', 'You\'re already watching ' + story.title);
         res.redirect('/read/' + req.params.id);
       }
@@ -373,9 +418,10 @@ app.get('/watch/:id', ensureAuthenticated, function(req, res) {
       else {
         var newWatching = new Watching({
           user: req.user.id,
-          story: req.params.id,
+          story: story.id,
           title: story.title,
-          theme: story.theme
+          theme: story.theme,
+          write: story.write
         });
         newWatching.save(function (err, newUser) {
           if (err) {
@@ -388,6 +434,169 @@ app.get('/watch/:id', ensureAuthenticated, function(req, res) {
         });
       }
     }
+  });
+});
+
+app.get('/unwatch/:id', ensureAuthenticated, function(req, res) {
+  Watching.remove({story: req.params.id, user: req.user.id}, function(err) {
+    if (err) {
+      console.log(err);
+      req.flash('error', 'Failed to unwatch. That must be annoying.');
+      res.redirect('/home');
+    }
+    else {
+      req.flash('info', 'Unwatched.');
+      res.redirect('/home');
+    }
+  });
+});
+
+app.get('/invite/:id', ensureAuthenticated, function(req, res) {
+  async.parallel([
+    function(callback) {
+      Story.findOne({_id: req.params.id}, callback);
+    },
+    function(callback) {
+      Invite.find({inviter: req.user.id, story: req.params.id}, callback);
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var invites = results[1];
+    if (err) {
+      console.log(err);
+      req.flash('error', 'Something went wrong...');
+      res.redirect('/home');
+    }
+    else if (!story) {
+      req.flash('error', 'Can\'t find that story...');
+      res.redirect('/home');
+    }
+    else {
+      res.render('invite', {story: story, invites: invites});
+    }
+  });
+});
+
+// TODO confirm that ID exists
+// TODO confirm that the story can be invited to
+// TODO put story title
+app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
+  async.parallel([
+    function(callback) {
+      User.findOne({name: req.body.name}, callback);
+    },
+    function(callback) {
+      Invite.findOne({
+        inviter: req.user.id,
+        invited: req.body.name,
+        story: req.params.id
+      }, callback);
+    },
+    function(callback) {
+      Story.findOne({_id: req.params.id}, callback);
+    }
+  ],
+  function(err, results) {
+    var newInvite;
+    var user = results[0];
+    var invite = results[1];
+    var story = results[2];
+    if (err) {
+      console.log(err);
+      req.flash('error', 'Something went wrong...');
+      res.redirect('/invite/' + req.params.id);
+    }
+    else if (!user) {
+      req.flash('error', 'No user with the Twitter name "' + req.body.name +
+                         '". Maybe tell them to create an account?');
+      res.redirect('/invite/' + req.params.id);
+    }
+    else if (invite) {
+      req.flash('error', 'Looks like ' + req.body.name +
+                         ' is already invited!');
+      res.redirect('/invite/' + req.params.id);
+    }
+    else if (!story) {
+      req.flash('error', 'That story doesn\'t exist!');
+      res.redirect('/home');
+    }
+    else {
+      newInvite = new Invite({
+        inviter: req.user.id,
+        invited: req.body.name,
+        story: req.params.id,
+        title: story.title,
+        theme: story.theme,
+        write: story.write,
+        from: req.user.name,
+        accepted: false
+      });
+      newInvite.save(function (err) {
+        if (err) {
+          console.log(err);
+          req.flash('error', 'Something went wrong...');
+          res.redirect('/invite/' + req.params.id);
+        }
+        else {
+          req.flash('error', 'Yay, ' + req.body.name +
+                             ' has been invited!');
+          res.redirect('/invite/' + req.params.id);
+        }
+      });
+    }
+  });
+});
+
+app.get('/invite/accept/:id', ensureAuthenticated, function(req, res) {
+  Invite.findOne({_id: req.params.id, invited: req.user.name}, function(err, invite) {
+    if (err) {
+      console.error(err);
+      req.flash('error', 'Couldn\'t find that invite...');
+      res.redirect('/home');
+    }
+    else {
+      invite.accepted = true;
+      invite.save(function(err) {
+        if (err) {
+          console.error(err);
+          req.flash('error', 'Something went wrong!');
+          res.redirect('/home');
+        }
+        else {
+          var newWatching = new Watching({
+            user: req.user.id,
+            story: invite.story,
+            title: invite.title,
+            theme: invite.theme,
+            write: invite.write
+          });
+          newWatching.save(function (err, newUser) {
+            if (err) {
+              req.flash('error', 'An error happened.');
+              res.redirect('/home');
+            }
+            else {
+              req.flash('info', 'You are now watching ' + invite.title + ' and can write to it.');
+              res.redirect('/home');
+            }
+          });
+        }
+      });
+    }
+  });
+});
+
+app.get('/invite/reject/:id', ensureAuthenticated, function(req, res) {
+  Invite.remove({_id: req.params.id, invited: req.user.name}, function(err, invite) {
+    if (err) {
+      console.error(err);
+      req.flash('error', 'Something went wrong!');
+    }
+    else {
+      req.flash('info', 'Politely declined.');
+    }
+    res.redirect('/home');
   });
 });
 

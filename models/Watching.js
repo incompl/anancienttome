@@ -6,7 +6,8 @@ var watchingSchema = mongoose.Schema({
   user: String,
   story: String,
   title: String,
-  theme: String
+  theme: String,
+  write: String
 });
 
 var Watching = mongoose.model('Watching', watchingSchema);

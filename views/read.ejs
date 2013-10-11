@@ -2,9 +2,13 @@
 
 <h1><%= story.title %></h1>
 
-<div>
-  <a href="/watch/<%= story.id %>" class="btn">Watch</a>
-</div>
+<% if (story.owner !== user.id) { %>
+
+  <div>
+    <a href="/watch/<%= story.id %>" class="btn">Watch</a>
+  </div>
+
+<% } %>
 
 <% if (chapters.length < 1) { %>
 
@@ -29,10 +33,13 @@
 <% }); %>
 
 
-<div class="chapter-links"><a href="/write/<%= story.id %>">
-  <% if (chapters.length < 1) { %>
-    Write the first chapter...
-  <% } else { %>
-    Write the next chapter...
-  <% } %>
-</a></div>
+<% if (story.owner === user.id ||
+       story.write === 'public') { %>
+  <div class="chapter-links"><a href="/write/<%= story.id %>">
+    <% if (chapters.length < 1) { %>
+      Write the first chapter...
+    <% } else { %>
+      Write the next chapter...
+    <% } %>
+  </a></div>
+<% } %>

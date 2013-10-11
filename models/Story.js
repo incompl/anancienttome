@@ -6,7 +6,8 @@ var storySchema = mongoose.Schema({
   title: String,
   owner: String,
   theme: String,
-  'public': Boolean,
+  read: String,
+  write: String
 });
 
 storySchema.methods.onCreate = function() {
