@@ -1,46 +1,70 @@
 <% layout('layout') -%>
 
-<% if (story.owner !== user.id) { %>
+<div class="units-row">
 
-  <div class="side-menu">
-    <a href="/watch/<%= story.id %>" class="btn">Watch</a>
+  <div class="unit-60">
+
+    <h2><%= story.title %></h2>
+
+    <% if (chapters.length < 1) { %>
+
+      <div class="no-chapters">Nothing has yet been written.</div>
+
+    <% } %>
+
+    <% chapters.forEach(function(chapter, i) { %>
+
+      <section class="chapter">
+
+        <h3>Chapter <%= i + 1%></h3>
+
+        <p><%= chapter.text %></p>
+
+        <div class="chapter-info">
+
+          by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <%= chapter.created.toUTCString() %>
+
+        </div>
+
+      </section>
+
+    <% }); %>
+
+
+    <% if (canWrite) { %>
+      <div class="chapter-links"><a href="/write/<%= story.id %>">
+        <% if (chapters.length < 1) { %>
+          Write the first chapter...
+        <% } else { %>
+          Write the next chapter...
+        <% } %>
+      </a></div>
+    <% } %>
+
   </div>
 
-<% } %>
+  <div class="unit-30">
 
-<h1><%= story.title %></h1>
-
-<% if (chapters.length < 1) { %>
-
-  <div class="no-chapters">Nothing has yet been written.</div>
-
-<% } %>
-
-<% chapters.forEach(function(chapter, i) { %>
-
-  <section class="chapter">
-
-    <h3>Chapter <%= i + 1%></h3>
-
-    <p><%= chapter.text %></p>
-
-    <div class="chapter-info">
-
-      by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <%= chapter.created.toUTCString() %>
-
+    <div class="chapter-buttons">
+      <% if (userId && story.owner !== userId) { %>
+        <a href="/watch/<%= story.id %>" class="btn">Watch</a>
+      <% } %>
     </div>
 
-  </section>
-
-<% }); %>
-
-
-<% if (canWrite) { %>
-  <div class="chapter-links"><a href="/write/<%= story.id %>">
-    <% if (chapters.length < 1) { %>
-      Write the first chapter...
+    <% if (story.read === 'public') { %>
+      <div>This story is public. You can share the URL.</div>
     <% } else { %>
-      Write the next chapter...
+      <div>This story can only be read by people who have been invited.</div>
     <% } %>
-  </a></div>
-<% } %>
+
+    <% if (story.write === 'public') { %>
+      <div>Anyone can write the next chapter.</div>
+    <% } else if (story.write === 'invite') { %>
+      <div>Someone who has been invited can write the next chapter.</div>
+    <% } else { %>
+      <div>Only the creator can write this story.</div>
+    <% } %>
+
+  </div>
+
+</div>

@@ -24,10 +24,6 @@ nav {
   background: #ddd;
 }
 
-.side-menu {
-  float: right;
-}
-
 .wrapper {
   max-width: 780px;
   margin: 0 auto;
@@ -60,12 +56,19 @@ nav {
 
 .story-info {
   margin: 0 0 1em;
+  line-height: 2em;
 }
 
 .story-info>span {
   background: hsla(0, 0%, 100%, .6);
   padding: 3px;
-  margin: 3px 3px 3px 0;
+  margin: 3px;
+  white-space: nowrap;
+}
+
+.chapter-buttons {
+  text-align: center;
+  margin: 0 0 1em;
 }
 
 .environment {
@@ -116,4 +119,9 @@ nav {
 
 .chapter-links {
   margin: 1em 0 0;
+}
+
+footer {
+  padding: .2em;
+  text-align: center;
 }

@@ -1,33 +1,43 @@
 <% layout('layout') -%>
 
-<h2>Invite co-authors to <%= story.title %></h2>
+<div class="units-row">
 
-<form method="post" action="/invite/<%= story.id %>/post" id="invite" class="forms forms-columnar">
-  <p>
-    <label for="title">Twitter name</label>
-    <input type="text" id="name" name="name" class="width-100" value="">
-  </p>
-  <p>
-    <input type="submit" class="btn" value="Invite!">
-  </p>
+  <div class="unit-50">
 
-</form>
+    <h2>Invite co-authors to <%= story.title %></h2>
 
-<h2>Current co-authors</h2>
+    <form method="post" action="/invite/<%= story.id %>/post" id="invite" class="forms">
+      <label>
+        Twitter name
+        <input type="text" id="name" name="name" value="" size="40" />
+      </label>
+      <p>
+        <input type="submit" class="btn" value="Invite!">
+      </p>
 
-<% if (invites.length < 1) { %>
-  <p>None currently.</p>
-<% } else { %>
+    </form>
 
-  <ul>
-    <% invites.forEach(function(invite) { %>
-      <li>
-        <a href="http://twitter.com/<%= invite.invited %>">@<%= invite.invited %>
-          <% if (invite.accepted) { %>
-            (accepted)
-          <% } %>
-      </li>
-    <% }); %>
-  </ul>
+  </div>
 
-<% } %>
+  <div class="unit-50">
+
+  <h2>Current co-authors</h2>
+
+  <% if (invites.length < 1) { %>
+    <p>None currently.</p>
+  <% } else { %>
+
+    <ul>
+      <% invites.forEach(function(invite) { %>
+        <li>
+          <a href="http://twitter.com/<%= invite.invited %>">@<%= invite.invited %>
+            <% if (invite.accepted) { %>
+              (accepted)
+            <% } %>
+        </li>
+      <% }); %>
+    </ul>
+
+  <% } %>
+
+</div>

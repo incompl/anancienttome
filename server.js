@@ -11,6 +11,7 @@ var themes = {
 
 console.log('Flexing the Theme muscles...');
 console.log(themes['Medieval Fantasy'].generate());
+console.log(themes['Science Fiction'].generate());
 console.log('Feels good... Feels right.');
 
 // Someone else's stuff
@@ -71,7 +72,8 @@ passport.use(new TwitterStrategy({
           id: profile.id,
           name: profile.username,
           twitterConsumerKey: token,
-          twitterConsumerSecret: tokenSecret
+          twitterConsumerSecret: tokenSecret,
+          influence: {}
         });
         user.save(function (err, newUser) {
           if (err) {
@@ -138,7 +140,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
   ],
   function(err, results) {
     if (err) {
-      console.log(err);
+      console.error(err);
     }
 
     var stories = results[0];
@@ -154,6 +156,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
          (w.write === 'invite' && invited)) {
         w.canWrite = true;
       }
+      w.inviteAccepted = invited;
     });
 
     res.render('home', {
@@ -253,7 +256,7 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
       theme: req.body.theme,
       read: req.body.read,
       write: req.body.write,
-      environment: []
+      environment: [themes[req.body.theme].generate()]
     });
     story.save(function (err, newStory) {
       if (err) {
@@ -273,12 +276,24 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
   }
 });
 
-app.get('/read/:id', ensureAuthenticated, function(req, res) {
+app.get('/read/:id', function(req, res) {
+
+  var userId;
+
+  if (!req.isAuthenticated()) {
+    req.user = null;
+    userId = -1;
+  }
+  else {
+    userId = req.user.id;
+  }
+
   Story.findById(req.params.id, function(err, story) {
     if (err) {
-      console.log(err);
+      console.error(err);
       req.flash('error', 'I couldn\'t find that story, weird...');
       res.redirect('/home');
+      return;
     }
     if (!story) {
       req.flash('error', 'I couldn\'t find that story, weird...');
@@ -295,7 +310,7 @@ app.get('/read/:id', ensureAuthenticated, function(req, res) {
         }
         Invite.findOne({
           story: story.id,
-          invited: req.user.id,
+          invited: userId,
           accepted: true
         }, function(err, invite) {
           if (err) {
@@ -304,11 +319,27 @@ app.get('/read/:id', ensureAuthenticated, function(req, res) {
             return;
           }
           var invited = invite !== null;
-          var canWrite = story.owner === req.user.id ||
+
+          var canRead = story.owner === userId ||
+                        story.read === 'public' ||
+                        (story.read === 'invite' && invited);
+
+          if (!canRead) {
+            req.flash('error', 'You must be invited to read that tale.');
+            res.redirect('/home');
+            return;
+          }
+
+          var canWrite = story.owner === userId ||
                          story.write === 'public' ||
                          (story.write === 'invite' && invited);
 
-          res.render('read', {story: story, chapters: chapters, canWrite: canWrite});
+          res.render('read', {
+            story: story,
+            chapters: chapters,
+            canWrite: canWrite,
+            userId: userId
+          });
         });
       });
     }
@@ -334,6 +365,8 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
     var story = results[0];
     var lastChapter = results[1];
     var user = results[2];
+    // TODO remove this line after a db cleanup
+    if (!user.influence) user.influence = {};
     var influence = user.influence[story.id];
     if (err) {
       req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
@@ -369,18 +402,29 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
     },
     function(callback) {
       User.findById(req.user._id, callback);
+    },
+    function(callback) {
+      Invite.find({invited: req.user.name}, callback);
     }
   ],
   function(err, results) {
     var story = results[0];
     var user = results[1];
+    var invites = results[2];
     var chapter;
     if (err) {
       req.flash('error', 'There has been an error.');
       res.redirect('/write/' + req.params.id);
     }
+
+    var invited = _.find(invites, {
+      story: story.id,
+      accepted: true
+    }) !== undefined;
+
     if (story.owner !== req.user.id &&
-        story.public !== 'public') {
+        story.public !== 'public' &&
+        !invited) {
       req.flash('error', 'You aren\'t allowed to author this story.');
       res.redirect('/write/' + req.params.id);
     }
@@ -402,7 +446,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
         user.save(function(err) {
           if (err) console.error(err);
         });
-        req.flash('reward', 'You\'ve received 3 Influence.');
+        req.flash('reward', 'You\'ve received 3 Influence!');
       }
 
       // Remove something from the Environment
@@ -580,7 +624,7 @@ app.get('/watch/:id', ensureAuthenticated, function(req, res) {
 app.get('/unwatch/:id', ensureAuthenticated, function(req, res) {
   Watching.remove({story: req.params.id, user: req.user.id}, function(err) {
     if (err) {
-      console.log(err);
+      console.error(err);
       req.flash('error', 'Failed to unwatch. That must be annoying.');
       res.redirect('/home');
     }
@@ -604,7 +648,7 @@ app.get('/invite/:id', ensureAuthenticated, function(req, res) {
     var story = results[0];
     var invites = results[1];
     if (err) {
-      console.log(err);
+      console.error(err);
       req.flash('error', 'Something went wrong...');
       res.redirect('/home');
     }
@@ -640,7 +684,7 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
     var invite = results[1];
     var story = results[2];
     if (err) {
-      console.log(err);
+      console.error(err);
       req.flash('error', 'Something went wrong...');
       res.redirect('/invite/' + req.params.id);
     }
@@ -675,7 +719,7 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
       });
       newInvite.save(function (err) {
         if (err) {
-          console.log(err);
+          console.error(err);
           req.flash('error', 'Something went wrong...');
           res.redirect('/invite/' + req.params.id);
         }

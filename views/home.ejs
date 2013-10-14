@@ -82,6 +82,10 @@
               You can only read
             <% } %>
           </span>
+          
+          <% if (watching.inviteAccepted) { %>
+            <span>Invited</span>
+          <% } %>
         </div>
 
         <a href="/read/<%= watching.story %>" class="btn btn-black">Read</a>

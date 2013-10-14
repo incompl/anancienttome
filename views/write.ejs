@@ -4,7 +4,13 @@
 
   <% if (lastChapter === null) { %>
 
-    <h2>It is time for <%= story.title %> to begin...</h2>
+    <h2>It is time for <cite><%= story.title %></cite> to begin...</h2>
+
+    <p>The theme: <%= story.theme %></p>
+
+    <p class="environment"><%= story.environment[0] %></p>
+
+    <p>Get the story started however you please! Introduce a protagonist, elaborate on the environment, describe the backstory, it's all up to you.</p>
 
   <% } else { %>
 
@@ -32,13 +38,15 @@
       <% }); %>
     </ol>
 
-    <input type="radio" name="environment" value="leave" checked> Leave it the same</input><br>
+    <p>You have <span class="influence"><%= influence || 0 %> Influence</span>.</p>
+
+    <input type="radio" name="environment" value="leave" checked> No changes</input><br>
     <% story.environment.forEach(function(env, i) { %>
       <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> for <span class="influence">5 Influence</span></input><br>
     <% }); %>
     <input type="radio" name="environment" value="add"> Add something new for <span class="influence">10 Influence</span></input>
 
-    <p>You have <span class="influence"><%= influence || 0 %> Influence</span>. Gain Influence by contributing frequently!</p>
+    <p> Gain Influence by contributing frequently!</p>
 
     <h3>And now, a dramatic continuation...</h3>
 
