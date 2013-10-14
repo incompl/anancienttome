@@ -40,7 +40,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new TwitterStrategy({
     consumerKey: keys.TWITTER_CONSUMER_KEY,
     consumerSecret: keys.TWITTER_CONSUMER_SECRET,
-    callbackURL: 'http://stories.jit.su/auth/twitter/callback'
+    callbackURL: 'http://localhost:8080/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
     User.find({
@@ -246,7 +246,8 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
       owner: req.user.id,
       theme: req.body.theme,
       read: req.body.read,
-      write: req.body.write
+      write: req.body.write,
+      environment: []
     });
     story.save(function (err, newStory) {
       if (err) {
@@ -309,9 +310,27 @@ app.get('/read/:id', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/write/:id', ensureAuthenticated, function(req, res) {
-  Story.findById(req.params.id, function(err, story) {
+
+  async.parallel([
+    function(callback) {
+      Story.findById(req.params.id, callback);
+    },
+    function(callback) {
+      Chapter.findOne({
+        story: req.params.id
+      }, {}, {sort: {'created': -1}}, callback);
+    },
+    function(callback) {
+      User.findById(req.user._id, callback);
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var lastChapter = results[1];
+    var user = results[2];
+    var influence = user.influence[story.id];
     if (err) {
-      req.flash('error', 'There has been an error, hmm....');
+      req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
       res.redirect('/home');
     }
     else if (!story) {
@@ -319,16 +338,10 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
       res.redirect('/home');
     }
     else {
-      Chapter.findOne({
-        story: req.params.id,
-
-      }, {}, {sort: {'created': -1}}, function(err, lastChapter) {
-        if (err) {
-          req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
-          res.redirect('/home');
-          return;
-        }
-        res.render('write', {story: story, lastChapter: lastChapter});
+      res.render('write', {
+        story: story,
+        lastChapter: lastChapter,
+        influence: influence
       });
     }
   });
@@ -356,6 +369,24 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
       res.redirect('/write/' + req.params.id);
     }
     else {
+
+      var removeMatch = req.body.environment && req.body.environment.match(/^remove-(\d)+$/);
+
+      if (!req.body.environment || req.body.environment === 'leave') {
+        // ok
+      }
+      else if (removeMatch) {
+        req.flash('info', 'Remove environment ' + removeMatch[1]);
+      }
+      else if (req.body.environment === 'add') {
+        req.flash('info', 'Environment added to.');
+      }
+      else {
+        req.flash('error', 'Invalid Environment. Maybe it changed, try again?');
+        res.redirect('/write/' + req.params.id);
+        return;
+      }
+
       chapter = new Chapter({
         story: req.params.id,
         author: req.user.id,

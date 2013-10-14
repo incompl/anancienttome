@@ -7,7 +7,8 @@ var storySchema = mongoose.Schema({
   owner: String,
   theme: String,
   read: String,
-  write: String
+  write: String,
+  environment: [String]
 });
 
 storySchema.methods.onCreate = function() {

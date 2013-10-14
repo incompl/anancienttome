@@ -6,7 +6,8 @@ var userSchema = mongoose.Schema({
   id: String,
   name: String,
   twitterConsumerKey: String,
-  twitterConsumerSecret: String
+  twitterConsumerSecret: String,
+  influence: Object
 });
 
 userSchema.methods.onCreate = function() {

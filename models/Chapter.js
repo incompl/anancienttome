@@ -11,7 +11,8 @@ var chapterSchema = mongoose.Schema({
 });
 
 chapterSchema.methods.onCreate = function() {
-  console.log(this.name + ' was created. dang!');
+  console.log('a new chapter of ' + this.story +
+              ' has been written by ' + this.authorName);
 };
 
 var Chapter = mongoose.model('Chapter', chapterSchema);

@@ -10,6 +10,10 @@ h2 {
   margin: .5em 0;
 }
 
+h3 {
+  margin: .5em 0;
+}
+
 p {
   margin: 1em 0;
 }
@@ -58,6 +62,17 @@ nav {
   background: hsla(0, 0%, 100%, .6);
   padding: 3px;
   margin: 3px 3px 3px 0;
+}
+
+.environment {
+  font-size: 1.2em;
+  color: green;
+  font-weight: bold;
+}
+
+.influence {
+  font-weight: bold;
+  color: purple;
 }
 
 #new {

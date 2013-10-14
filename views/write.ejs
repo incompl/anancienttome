@@ -1,22 +1,48 @@
 <% layout('layout') -%>
 
-<% if (lastChapter === null) { %>
-
-  <h2>It is time for <%= story.title %> to begin...</h2>
-
-<% } else { %>
-
-  <h2>Last time, on <a href="/read/<%= story.id %>"><%= story.title %></a>...</h2>
-
-  
-
-  <p><%= lastChapter.text %></p>
-
-  <h2>And now, a dramatic continuation...</h2>
-
-<% } %>
-
 <form id="chapter-form" method="post" action="/write/<%= story.id %>/post" class="forms">
+
+  <% if (lastChapter === null) { %>
+
+    <h2>It is time for <%= story.title %> to begin...</h2>
+
+  <% } else { %>
+
+    <h2>Write the next chapter of <a href="/read/<%= story.id %>"><%= story.title %></a></h2>
+
+    <h3>Previous chapter</h3>
+
+    <p><%= lastChapter.text %></p>
+
+    <div class="chapter-info">
+
+      by <a href="http://twitter.com/<%=lastChapter.authorName %>"><%= lastChapter.authorName %></a> on <%= lastChapter.created.toUTCString() %>
+
+    </div>
+
+    <h3>The Environment</h3>
+
+    <% if (story.environment.length === 0) { %>
+      <p class="environment">Nothing unusual at this time.</p>
+    <% } %>
+
+    <ol>
+      <% story.environment.forEach(function(env) { %>
+        <li class="environment"><%= env %></li>
+      <% }); %>
+    </ol>
+
+    <input type="radio" name="environment" value="leave" checked> Leave it the same</input><br>
+    <% story.environment.forEach(function(env, i) { %>
+      <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> for <span class="influence">5 Influence</span></input><br>
+    <% }); %>
+    <input type="radio" name="environment" value="add"> Add something new for <span class="influence">10 Influence</span></input>
+
+    <p>You have <span class="influence"><%= influence || 0 %> Influence</span>. Gain Influence by contributing frequently!</p>
+
+    <h3>And now, a dramatic continuation...</h3>
+
+  <% } %>
 
   <label>
     <textarea id="chapter" name="chapter" rows="10" class="width-100"></textarea>
