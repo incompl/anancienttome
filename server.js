@@ -3,6 +3,16 @@
 // My stuff
 var keys = require('./keys.js');
 
+// Themes
+var themes = {
+  'Medieval Fantasy': require('./themes/MedievalFantasy'),
+  'Science Fiction': require('./themes/ScienceFiction')
+};
+
+console.log('Flexing the Theme muscles...');
+console.log(themes['Medieval Fantasy'].generate());
+console.log('Feels good... Feels right.');
+
 // Someone else's stuff
 var _ = require('lodash');
 var async = require('async');
@@ -74,11 +84,6 @@ passport.use(new TwitterStrategy({
     });
   }
 ));
-
-var themes = [
-  'Medieval Fantasy',
-  'Science Fiction'
-];
 
 var app = express();
 
@@ -197,7 +202,7 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/new', ensureAuthenticated, function(req, res) {
-  res.render('new', {themes: themes});
+  res.render('new', {themes: Object.keys(themes)});
 });
 
 app.post('/new/post', ensureAuthenticated, function(req, res) {
@@ -216,7 +221,7 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
     req.flash('error', 'Your title needs to be shorter!');
   }
 
-  if (!_.contains(themes, req.body.theme)) {
+  if (!_.contains(Object.keys(themes), req.body.theme)) {
     success = false;
     req.flash('error', 'Invalid theme.');
   }
@@ -437,7 +442,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
           return;
         }
         else {
-          env = 'There is an elf in front of you. WAOAOA';
+          env = themes[story.theme] ? themes[story.theme].generate() : 'Invalid Theme.';
           story.environment.push(env);
           user.influence[story.id] -= 10;
           user.markModified('influence');
