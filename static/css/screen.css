@@ -1,17 +1,35 @@
+@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville);
+
 header {
-  padding: 1em;
+  padding: .7em 1em;
+  font-size: 1.2em;
+}
+
+header a {
+  text-decoration: none;
+}
+
+header p {
+  margin: .5em 0 0;
+  font-size: .9em;
+  font-family: 'Libre Baskerville', serif;
+  color: #7F90A3;
 }
 
 h1 {
   margin: 0;
+  font-family: 'Libre Baskerville', serif;
+  text-shadow: 1px 1px 0 hsla(0, 0%, 0%, .7);
 }
 
 h2 {
-  margin: .5em 0;
+  margin: .5em 0 .8em;
+  font-family: 'Libre Baskerville', serif;
 }
 
 h3 {
   margin: .5em 0;
+  font-family: 'Libre Baskerville', serif;
 }
 
 p {
@@ -19,9 +37,17 @@ p {
 }
 
 nav {
-  padding: .5em 1em;
+  padding: .4em 1em .3em;
   font-size: 1.2em;
-  background: #ddd;
+  background: #369;
+  color: hsla(0, 0%, 100%, .3);
+}
+
+nav a {
+  margin: 0 1em 0 0;
+  text-decoration: none;
+  color: white;
+  text-shadow: 1px 1px 1px hsla(0, 0%, 0%, .7);
 }
 
 .wrapper {
@@ -49,9 +75,13 @@ nav {
 }
 
 .story {
-  background: #ccf;
+  background: #C8D9EA;
   padding: 1em;
   margin: 1em 0;
+}
+
+.story h3 {
+  margin: 0 0 .7em;
 }
 
 .story-info {
