@@ -14,39 +14,49 @@
 
   <% } else { %>
 
-    <h2>Write the next chapter of <a href="/read/<%= story.id %>"><%= story.title %></a></h2>
+    <p><a href="/read/<%= story.id %>">Back to "<%= story.title %>"</a></p>
+
+    <h2>Write the next chapter</h2>
 
     <h3>Previous chapter</h3>
 
-    <p><%= lastChapter.text %></p>
+    <section>
 
-    <div class="chapter-info">
+      <p><%= lastChapter.text %></p>
 
-      by <a href="http://twitter.com/<%=lastChapter.authorName %>"><%= lastChapter.authorName %></a> on <%= lastChapter.created.toUTCString() %>
+      <div class="chapter-info">
 
-    </div>
+        by <a href="http://twitter.com/<%=lastChapter.authorName %>"><%= lastChapter.authorName %></a> on <%= lastChapter.created.toUTCString() %>
+
+      </div>
+
+    </section>
 
     <h3>The Environment</h3>
 
-    <% if (story.environment.length === 0) { %>
-      <p class="environment">Nothing unusual at this time.</p>
-    <% } %>
+    <section>
 
-    <ol>
-      <% story.environment.forEach(function(env) { %>
-        <li class="environment"><%= env %></li>
+      <% if (story.environment.length === 0) { %>
+        <p class="environment">Nothing unusual at this time.</p>
+      <% } %>
+
+      <ol>
+        <% story.environment.forEach(function(env) { %>
+          <li class="environment"><%= env %></li>
+        <% }); %>
+      </ol>
+
+      <p>You have <span class="influence"><%= influence || 0 %> Influence</span>.</p>
+
+      <input type="radio" name="environment" value="leave" checked> No changes</input><br>
+      <% story.environment.forEach(function(env, i) { %>
+        <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> for <span class="influence">5 Influence</span></input><br>
       <% }); %>
-    </ol>
+      <input type="radio" name="environment" value="add"> Add something new for <span class="influence">10 Influence</span></input>
 
-    <p>You have <span class="influence"><%= influence || 0 %> Influence</span>.</p>
+      <p> Gain Influence by contributing frequently!</p>
 
-    <input type="radio" name="environment" value="leave" checked> No changes</input><br>
-    <% story.environment.forEach(function(env, i) { %>
-      <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> for <span class="influence">5 Influence</span></input><br>
-    <% }); %>
-    <input type="radio" name="environment" value="add"> Add something new for <span class="influence">10 Influence</span></input>
-
-    <p> Gain Influence by contributing frequently!</p>
+    </section>
 
     <h3>And now, a dramatic continuation...</h3>
 

@@ -166,11 +166,15 @@ ol {
 }
 
 .chapter {
-  padding: .5em 0;
+  padding: 0 0 1em;
 }
 
 .chapter-info {
   color: #A0A0A0;
+}
+
+#chapter-form section {
+  padding: 0 1.5em;
 }
 
 .no-chapters {
