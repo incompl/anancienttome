@@ -434,6 +434,14 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
       var removeNum;
       var env;
 
+      if (!user.influence) {
+        user.influence = {};
+        user.markModified('influence');
+        user.save(function(err) {
+          if (err) console.error(err);
+        });
+      }
+
       if (typeof user.influence[story.id] !== 'number' ||
           isNaN(user.influence[story.id])) {
         user.influence[story.id] = 0;
@@ -724,7 +732,7 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
           res.redirect('/invite/' + req.params.id);
         }
         else {
-          req.flash('error', 'Yay, ' + req.body.name +
+          req.flash('info', 'Yay, ' + req.body.name +
                              ' has been invited!');
           res.redirect('/invite/' + req.params.id);
         }
