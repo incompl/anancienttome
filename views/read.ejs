@@ -43,26 +43,26 @@
 
   </div>
 
-  <div class="unit-30">
+  <div class="unit-30 read-sidebar">
 
-    <div class="chapter-buttons">
+    <div class="read-buttons">
       <% if (userId && story.owner !== userId) { %>
         <a href="/watch/<%= story.id %>" class="btn">Watch</a>
       <% } %>
     </div>
 
     <% if (story.read === 'public') { %>
-      <div>This story is public. You can share the URL.</div>
+      <p>This story is public. You can share the URL.</p>
     <% } else { %>
-      <div>This story can only be read by people who have been invited.</div>
+      <p>This story can only be read by people who have been invited.</p>
     <% } %>
 
     <% if (story.write === 'public') { %>
-      <div>Anyone can write the next chapter.</div>
+      <p>Anyone can write the next chapter.</p>
     <% } else if (story.write === 'invite') { %>
-      <div>Someone who has been invited can write the next chapter.</div>
+      <p>Anyone who has been invited can write the next chapter.</p>
     <% } else { %>
-      <div>Only the creator can write this story.</div>
+      <p>Only the creator can write this story.</p>
     <% } %>
 
   </div>

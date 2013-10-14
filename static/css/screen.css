@@ -23,7 +23,7 @@ h1 {
 }
 
 h2 {
-  margin: .5em 0 .8em;
+  margin: .7em 0 .7em;
   font-family: 'Libre Baskerville', serif;
 }
 
@@ -50,6 +50,31 @@ nav a {
   text-shadow: 1px 1px 1px hsla(0, 0%, 0%, .7);
 }
 
+ol {
+  padding: 0;
+  margin: 1em 0 1em 1.8em;
+}
+
+.btn-purple {
+  color: white;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.24);
+  border-color: #9214C0;
+  border-bottom-color: #6F0F91;
+  background-color: #B645E5;
+  background-image: -moz-linear-gradient(top,#C764EF,#A015D6);
+  background-image: -ms-linear-gradient(top,#C764EF,#A015D6);
+  background-image: -webkit-gradient(linear,0 0,0 100%,from(#C764EF),to(#A015D6));
+  background-image: -webkit-linear-gradient(top,#C764EF,#A015D6);
+  background-image: -o-linear-gradient(top,#C764EF,#A015D6);
+  background-image: linear-gradient(top,#C764EF,#A015D6);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#C764EF',endColorstr='#A015D6',GradientType=0);
+}
+
+.btn-purple:hover {
+  background: #A116D7;
+  color: rgba(255,255,255,0.8)
+}
+
 .wrapper {
   max-width: 780px;
   margin: 0 auto;
@@ -71,7 +96,7 @@ nav a {
 }
 
 #content {
-  padding: 1em;
+  padding: 0 1em 1em;
 }
 
 .story {
@@ -96,9 +121,14 @@ nav a {
   white-space: nowrap;
 }
 
-.chapter-buttons {
+.read-sidebar p {
+  line-height: 1.2em;
+  margin: .5em 0;
+}
+
+.read-buttons {
   text-align: center;
-  margin: 0 0 1em;
+  margin: 1em 0;
 }
 
 .environment {
