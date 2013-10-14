@@ -12,7 +12,7 @@ var storySchema = mongoose.Schema({
 });
 
 storySchema.methods.onCreate = function() {
-  console.log(this.name + ' was created. dang!');
+  console.log(this.title + ' has begun.');
 };
 
 storySchema.statics.random = function(callback) {

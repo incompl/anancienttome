@@ -45,6 +45,15 @@
         </div>
       <% }); %>
     <% } %>
+    <% if (reward) { %>
+      <% reward.forEach(function(msg) { %>
+        <div class="flash flash-reward">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
     <div id="content">
       <div class="wrapper">
         <%- body %>

@@ -97,6 +97,7 @@ app.configure(function() {
     res.locals.user = req.user;
     res.locals.info = req.flash('info');
     res.locals.error = req.flash('error');
+    res.locals.reward = req.flash('reward');
     next();
   });
   app.use(app.router);
@@ -352,12 +353,22 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
   var matches = req.body.chapter.match(/\w+/g);
 
   if (!matches || matches.length < 10 || matches.length > 200) {
-    req.flash('error', 'There has been an error.');
+    req.flash('error', 'You need at least 10 words and less than 200 words.');
     res.redirect('/write/' + req.params.id);
     return;
   }
 
-  Story.findById(req.params.id, function(err, story) {
+  async.parallel([
+    function(callback) {
+      Story.findById(req.params.id, callback);
+    },
+    function(callback) {
+      User.findById(req.user._id, callback);
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var user = results[1];
     var chapter;
     if (err) {
       req.flash('error', 'There has been an error.');
@@ -371,16 +382,76 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
     else {
 
       var removeMatch = req.body.environment && req.body.environment.match(/^remove-(\d)+$/);
+      var removeNum;
+      var env;
 
+      if (typeof user.influence[story.id] !== 'number' ||
+          isNaN(user.influence[story.id])) {
+        user.influence[story.id] = 0;
+      }
+
+      // Leave Environment the same
       if (!req.body.environment || req.body.environment === 'leave') {
-        // ok
+        user.influence[story.id] += 3;
+        user.markModified('influence');
+        user.save(function(err) {
+          if (err) console.error(err);
+        });
+        req.flash('reward', 'You\'ve received 3 Influence.');
       }
+
+      // Remove something from the Environment
       else if (removeMatch) {
-        req.flash('info', 'Remove environment ' + removeMatch[1]);
+        removeNum = Number(removeMatch[1]) - 1;
+        env = story.environment[removeNum];
+
+        if (!env) {
+          req.flash('error', 'Invalid Environment. Maybe it changed, try again?');
+          res.redirect('/write/' + req.params.id);
+          return;
+        }
+        else if (user.influence[story.id] < 5) {
+          req.flash('error', 'You don\'t have enough Influence!');
+          res.redirect('/write/' + req.params.id);
+          return;
+        }
+        else {
+          story.environment.splice(removeNum, 1);
+          user.influence[story.id] -= 5;
+          user.markModified('influence');
+          story.save(function(err) {
+            if (err) console.error(err);
+          });
+          user.save(function(err) {
+            if (err) console.error(err);
+          });
+          req.flash('reward', 'Paid 5 Influence and removed Environment "' + env + '"');
+        }
       }
+
+      // Add something to the environment
       else if (req.body.environment === 'add') {
-        req.flash('info', 'Environment added to.');
+        if (user.influence[story.id] < 10) {
+          req.flash('error', 'You don\'t have enough Influence!');
+          res.redirect('/write/' + req.params.id);
+          return;
+        }
+        else {
+          env = 'There is an elf in front of you. WAOAOA';
+          story.environment.push(env);
+          user.influence[story.id] -= 10;
+          user.markModified('influence');
+          story.save(function(err) {
+            if (err) console.error(err);
+          });
+          user.save(function(err) {
+            if (err) console.error(err);
+          });
+          req.flash('reward', 'Paid 10 Influence and added to the Environment: "' + env + '"');
+        }
       }
+
+      // Invalid Environment request
       else {
         req.flash('error', 'Invalid Environment. Maybe it changed, try again?');
         res.redirect('/write/' + req.params.id);
