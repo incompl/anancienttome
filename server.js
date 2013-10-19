@@ -301,61 +301,62 @@ app.get('/read/:id', function(req, res) {
     userId = req.user.id;
   }
 
-  Story.findById(req.params.id, function(err, story) {
+  async.parallel([
+    function(callback) {
+      Story.findById(req.params.id, callback);
+    },
+    function(callback) {
+      Chapter.find({story: req.params.id}, callback);
+    },
+    function(callback) {
+      Invite.findOne({
+        story: req.params.id,
+        invited: userId,
+        accepted: true
+      }, callback);
+    },
+    function(callback) {
+      Watching.findOne({story: req.params.id}, callback);
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var chapters = results[1];
+    var invited = results[2] !== null;
+    var watching = results[3] !== null;
     if (err) {
       console.error(err);
-      req.flash('error', 'I couldn\'t find that story, weird...');
+      req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
       res.redirect('/home');
       return;
     }
     if (!story) {
-      req.flash('error', 'I couldn\'t find that story, weird...');
+      req.flash('error', 'I couldn\'t find that story...');
       res.redirect('/home');
+      return;
     }
-    else {
-      Chapter.find({
-        story: req.params.id
-      }, function(err, chapters) {
-        if (err) {
-          req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
-          res.redirect('/home');
-          return;
-        }
-        Invite.findOne({
-          story: story.id,
-          invited: userId,
-          accepted: true
-        }, function(err, invite) {
-          if (err) {
-            req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
-            res.redirect('/home');
-            return;
-          }
-          var invited = invite !== null;
 
-          var canRead = story.owner === userId ||
-                        story.read === 'public' ||
-                        (story.read === 'invite' && invited);
+    var canRead = story.owner === userId ||
+                  story.read === 'public' ||
+                  (story.read === 'invite' && invited);
 
-          if (!canRead) {
-            req.flash('error', 'You must be invited to read that tale.');
-            res.redirect('/home');
-            return;
-          }
-
-          var canWrite = story.owner === userId ||
-                         story.write === 'public' ||
-                         (story.write === 'invite' && invited);
-
-          res.render('read', {
-            story: story,
-            chapters: formatChapters(chapters),
-            canWrite: canWrite,
-            userId: userId
-          });
-        });
-      });
+    if (!canRead) {
+      req.flash('error', 'You must be invited to read that tale.');
+      res.redirect('/home');
+      return;
     }
+
+    var canWrite = story.owner === userId ||
+                   story.write === 'public' ||
+                   (story.write === 'invite' && invited);
+
+    res.render('read', {
+      story: story,
+      chapters: formatChapters(chapters),
+      canWrite: canWrite,
+      userId: userId,
+      watching: watching
+    });
   });
 });
 

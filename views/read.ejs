@@ -48,11 +48,14 @@
   <div class="unit-30 read-sidebar">
 
     <div class="read-buttons">
-      <% if (userId && story.owner !== userId) { %>
+      <% if (user && story.owner !== userId && !watching) { %>
         <a href="/watch/<%= story.id %>" class="btn">Watch</a>
       <% } %>
     </div>
 
+    <% if (user && watching) { %>
+      You are watching this story. <a href="/unwatch/<%= story.id %>">Unwatch</a>
+    <% } %>
     <% if (story.read === 'public') { %>
       <p>This story is public. You can share the URL.</p>
     <% } else { %>
