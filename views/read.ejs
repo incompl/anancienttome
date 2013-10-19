@@ -18,11 +18,13 @@
 
         <h3>Chapter <%= i + 1%></h3>
 
-        <p><%= chapter.text %></p>
+        <% chapter.formatted.forEach(function(line) { %>
+          <p><%= line %></p>
+        <% }); %>
 
         <div class="chapter-info">
 
-          by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <%= chapter.created.toUTCString() %>
+          by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <a href="/read/chapter/<%=chapter.id%>"><%= chapter.created.toUTCString() %></a>
 
         </div>
 

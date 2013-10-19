@@ -276,6 +276,13 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
   }
 });
 
+function formatChapters(chapters) {
+  chapters.forEach(function(chapter) {
+    chapter.formatted = chapter.text.split(/\r?\n/);
+  });
+  return chapters;
+}
+
 app.get('/read/:id', function(req, res) {
 
   var userId;
@@ -336,7 +343,7 @@ app.get('/read/:id', function(req, res) {
 
           res.render('read', {
             story: story,
-            chapters: chapters,
+            chapters: formatChapters(chapters),
             canWrite: canWrite,
             userId: userId
           });
@@ -344,6 +351,10 @@ app.get('/read/:id', function(req, res) {
       });
     }
   });
+});
+
+app.get('/read/chapter/:id', function(req, res) {
+  res.render('chapter', {});
 });
 
 app.get('/write/:id', ensureAuthenticated, function(req, res) {
