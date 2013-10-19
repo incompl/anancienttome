@@ -1,7 +1,13 @@
 /* jshint node:true */
 
+var fs = require('fs');
+
 // My stuff
-var keys = require('./keys.js');
+var envFilePath = './env.js';
+var envFileExists = fs.existsSync(envFilePath);
+if (envFileExists) {
+  require(envFilePath);
+}
 
 // Themes
 var themes = {
@@ -28,7 +34,7 @@ var flash = require('connect-flash');
 
 // Mongo stuff
 var mongoose = require('mongoose');
-mongoose.connect(keys.MONGO_CONNECTION_STRING);
+mongoose.connect(process.env.MONGO_CONNECTION_STRING);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback () {
@@ -49,9 +55,9 @@ passport.deserializeUser(function(obj, done) {
 });
 
 passport.use(new TwitterStrategy({
-    consumerKey: keys.TWITTER_CONSUMER_KEY,
-    consumerSecret: keys.TWITTER_CONSUMER_SECRET,
-    callbackURL: 'http://localhost:8080/auth/twitter/callback'
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: '/auth/twitter/callback'
   },
   function(token, tokenSecret, profile, done) {
     User.find({
@@ -96,7 +102,7 @@ app.configure(function() {
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({secret: 'egg salad egg burrito feast'}));
+  app.use(express.session({secret: process.env.COOKIE_SECRET}));
   app.use(flash());
   app.use(passport.initialize());
   app.use(passport.session());
@@ -426,6 +432,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
     if (err) {
       req.flash('error', 'There has been an error.');
       res.redirect('/write/' + req.params.id);
+      return;
     }
 
     var invited = _.find(invites, {
