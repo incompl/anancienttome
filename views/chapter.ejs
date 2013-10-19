@@ -1,1 +1,43 @@
-TODO
+<% layout('layout') -%>
+
+<div class="units-row">
+
+  <div class="unit-60">
+
+    <% chapters.forEach(function(chapter, i) { %>
+
+      <section class="chapter">
+
+        <h2><%= story.title %></h2>
+
+        <h3>An Excerpt by <%= chapter.authorName %></h3>
+
+        <% chapter.formatted.forEach(function(line) { %>
+          <p><%= line %></p>
+        <% }); %>
+
+        <div class="chapter-info">
+
+          by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <%= chapter.created.toUTCString() %>
+
+        </div>
+
+      </section>
+
+    <% }); %>
+
+    <p><a href="/read/<%= story.id %>">Read More</a></p>
+
+  </div>
+
+  <div class="unit-30 read-sidebar">
+
+    <% if (story.read === 'public') { %>
+      <p>This page is public. You can share the URL.</p>
+    <% } else { %>
+      <p>This page can only be seen by people who have been invited to this story.</p>
+    <% } %>
+
+  </div>
+
+</div>

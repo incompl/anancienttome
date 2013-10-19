@@ -360,8 +360,66 @@ app.get('/read/:id', function(req, res) {
   });
 });
 
-app.get('/read/chapter/:id', function(req, res) {
-  res.render('chapter', {});
+app.get('/read/:story/chapter/:id', function(req, res) {
+  var userId;
+
+  if (!req.isAuthenticated()) {
+    req.user = null;
+    userId = -1;
+  }
+  else {
+    userId = req.user.id;
+  }
+
+  async.parallel([
+    function(callback) {
+      Story.findById(req.params.story, callback);
+    },
+    function(callback) {
+      Chapter.find({
+        _id: req.params.id,
+        story: req.params.story,
+      }, callback);
+    },
+    function(callback) {
+      Invite.findOne({
+        story: req.params.story,
+        invited: userId,
+        accepted: true
+      }, callback);
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var chapters = results[1];
+    var invited = results[2] !== null;
+    if (err) {
+      console.error(err);
+      req.flash('error', 'Hmm, I can\'t find the right page. Try again?');
+      res.redirect('/read/' + req.params.id);
+      return;
+    }
+    if (!story || chapters.length < 1) {
+      req.flash('error', 'I couldn\'t find that chapter...');
+      res.redirect('/read/' + req.params.id);
+      return;
+    }
+
+    var canRead = story.owner === userId ||
+                  story.read === 'public' ||
+                  (story.read === 'invite' && invited);
+
+    if (!canRead) {
+      req.flash('error', 'You must be invited to read this tale.');
+      res.redirect('/home');
+      return;
+    }
+
+    res.render('chapter', {
+      story: story,
+      chapters: formatChapters(chapters)
+    });
+  });
 });
 
 app.get('/write/:id', ensureAuthenticated, function(req, res) {
