@@ -7,7 +7,11 @@
 }
 
 a {
-  color: #553133;
+  color: black;
+}
+
+cite {
+  color: #777;
 }
 
 header {
@@ -17,7 +21,7 @@ header {
 
 header a {
   text-decoration: none;
-  color: #553133;
+  color: #5E1A05;
 }
 
 header p {
@@ -50,15 +54,21 @@ p {
 #main-nav {
   padding: .4em 1em .3em;
   font-size: 1.2em;
-  background: #3A2224;
+  background: #441709;
   color: hsla(0, 0%, 100%, .3);
 }
 
 #main-nav a {
-  margin: 0 1em 0 0;
+  margin: 0 .8em 0 0;
+  padding: 0 .2em;
   text-decoration: none;
   color: white;
   white-space: nowrap;
+  text-shadow: 1px 1px 0 black;
+}
+
+#main-nav a:hover {
+  background: hsla(0, 100%, 100%, .3);
 }
 
 ol {

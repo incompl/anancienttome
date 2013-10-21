@@ -30,7 +30,7 @@
     <ul>
       <% invites.forEach(function(invite) { %>
         <li>
-          <a href="http://twitter.com/<%= invite.invited %>">@<%= invite.invited %>
+          <a href="http://twitter.com/<%= invite.invited %>">@<%= invite.invited %></a>
             <% if (invite.accepted) { %>
               (accepted)
             <% } %>

@@ -5,6 +5,7 @@ html {
 body {
   height: 100%;
   padding: 5em 0 0;
+  background-color: #922908;
   background-image: url('/img/bg.jpg');
   background-size: cover;
   background-position: center;
