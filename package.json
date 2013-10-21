@@ -1,6 +1,10 @@
 {
   "name": "stories",
   "subdomain": "stories",
+  "domains": [
+    "anancienttome.com",
+    "www.anancienttome.com"
+  ],
   "scripts": {
     "start": "node server.js"
   },
