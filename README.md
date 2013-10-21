@@ -1,1 +1,1 @@
-Source for [nancienttome.com](http://anancienttome.com/.
+Source for [anancienttome.com](http://anancienttome.com/).
