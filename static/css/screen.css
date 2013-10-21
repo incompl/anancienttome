@@ -1,5 +1,15 @@
 @import url(http://fonts.googleapis.com/css?family=Libre+Baskerville);
 
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+a {
+  color: #553133;
+}
+
 header {
   padding: .7em 1em;
   font-size: 1.2em;
@@ -7,6 +17,7 @@ header {
 
 header a {
   text-decoration: none;
+  color: #553133;
 }
 
 header p {
@@ -36,18 +47,17 @@ p {
   margin: 1em 0;
 }
 
-nav {
+#main-nav {
   padding: .4em 1em .3em;
   font-size: 1.2em;
-  background: #369;
+  background: #3A2224;
   color: hsla(0, 0%, 100%, .3);
 }
 
-nav a {
+#main-nav a {
   margin: 0 1em 0 0;
   text-decoration: none;
   color: white;
-  text-shadow: 1px 1px 1px hsla(0, 0%, 0%, .7);
   white-space: nowrap;
 }
 
@@ -101,7 +111,7 @@ ol {
 }
 
 .story {
-  background: #C8D9EA;
+  background: #F1E3E4;
   padding: 1em;
   margin: 1em 0;
 }

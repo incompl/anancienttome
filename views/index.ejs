@@ -1,11 +1,63 @@
-<% layout('layout') -%>
+<!doctype html>
+<html>
+  <head>
+    <title>An Ancient Tome | Collaborative Interactive Fiction</title>
+    <link rel="stylesheet" href="/css/kube.min.css">
+    <link rel="stylesheet" href="/css/screen.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <meta name="viewport" content="width=device-width">
+  </head>
+  <body>
+    <% if (info) { %>
+      <% info.forEach(function(msg) { %>
+        <div class="flash">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    <% if (error) { %>
+      <% error.forEach(function(msg) { %>
+        <div class="flash flash-error">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    <% if (reward) { %>
+      <% reward.forEach(function(msg) { %>
+        <div class="flash flash-reward">
+          <div class="wrapper">
+            <%= msg %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    <div id="content">
+      <div class="wrapper">
 
-<h2>Let's tell stories together.</h2>
+        <h1>An Ancient Tome</h1>
 
-<p>Stories is a collaborative storytelling game. The main thing you do is write, much as if you were sitting down to write a book.</p>
+        <h2>Collaborative Interactive Fiction</h2>
 
-<p>You and your co-authors will receive a randomly-generated and theme-appropriate Environment. You can respond by taking the story in whatever direction you want!</p>
+        <nav id="home-nav">
+          <a href="/auth/twitter">Log in with Twitter</a>
+        </nav>
 
-<p>The twist is that by writing frequently you gain Influence. Influence can be used to modify the current Environment. For example, the Environment might say "A giant ogre is here." You could spend Influence to remove the ogre. Then you could write the the removal of the ogre into your story! Did the hero slay it? Did it get bored and amble away? That's up to you!</p>
+        <p>An Ancient Tome is a storytelling game. The main thing you do is write, much as if you were sitting down to write a short story.</p>
 
-<p>Ready to play? <a href="/auth/twitter">Log in with Twitter</a></p>
+        <p>You and your co-authors will receive a randomly-generated and theme-appropriate Environment. You can respond by taking the story in whatever direction you want!</p>
+
+        <p>The twist is that by writing frequently you gain Influence. Influence can be used to modify the current Environment. For example, the Environment might say "A giant ogre is here." You could spend Influence to remove the ogre. Then you could write the the removal of the ogre into your story! Did the hero slay it? Did it get bored and amble away? That's up to you!</p>
+
+      </div>
+    </div>
+
+    <div id="fineprint">
+      <a href="http://www.flickr.com/photos/75905404@N00/6014852919/in/photostream/">Image Credit</a>
+    </div>
+
+  </body>
+</html>
