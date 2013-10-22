@@ -461,7 +461,7 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
     else {
       res.render('write', {
         story: story,
-        lastChapter: lastChapter,
+        lastChapter: formatChapters([lastChapter]),
         influence: influence
       });
     }

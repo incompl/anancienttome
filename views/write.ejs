@@ -20,17 +20,23 @@
 
     <h3>Previous chapter</h3>
 
-    <section>
+    <% lastChapter.forEach(function(chapter, i) { %>
 
-      <p><%= lastChapter.text %></p>
+      <section class="chapter">
 
-      <div class="chapter-info">
+        <% chapter.formatted.forEach(function(line) { %>
+          <p><%= line %></p>
+        <% }); %>
 
-        by <a href="http://twitter.com/<%=lastChapter.authorName %>"><%= lastChapter.authorName %></a> on <%= lastChapter.created.toUTCString() %>
+        <div class="chapter-info">
 
-      </div>
+          by <a href="http://twitter.com/<%=chapter.authorName %>"><%= chapter.authorName %></a> on <a href="/read/<%= story.id %>/chapter/<%=chapter.id%>"><%= chapter.created.toUTCString() %></a>
 
-    </section>
+        </div>
+
+      </section>
+
+    <% }); %>
 
     <h3>The Environment</h3>
 
