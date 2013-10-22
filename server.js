@@ -292,13 +292,16 @@ function formatChapters(chapters) {
 app.get('/read/:id', function(req, res) {
 
   var userId;
+  var userName;
 
   if (!req.isAuthenticated()) {
     req.user = null;
     userId = -1;
+    userName = null;
   }
   else {
     userId = req.user.id;
+    userName = req.user.name;
   }
 
   async.parallel([
@@ -311,7 +314,7 @@ app.get('/read/:id', function(req, res) {
     function(callback) {
       Invite.findOne({
         story: req.params.id,
-        invited: userId,
+        invited: userName,
         accepted: true
       }, callback);
     },
