@@ -500,7 +500,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
     }) !== undefined;
 
     if (story.owner !== req.user.id &&
-        story.public !== 'public' &&
+        story.write !== 'public' &&
         !invited) {
       req.flash('error', 'You aren\'t allowed to author this story.');
       res.redirect('/write/' + req.params.id);
