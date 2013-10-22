@@ -120,6 +120,15 @@ ol {
   padding: 0 1em 1em;
 }
 
+.news {
+  padding: 0 .2em;
+}
+
+.last-hour {
+  font-weight: bold;
+  background: #E5FFF2;
+}
+
 .story {
   background: #F1E3E4;
   padding: 1em;

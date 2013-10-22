@@ -153,22 +153,47 @@ app.get('/home', ensureAuthenticated, function(req, res) {
     var watching = results[1];
     var invites = results[2];
 
-    watching.forEach(function(w) {
-      var invited = _.find(invites, {
-        story: w.story,
-        accepted: true
-      }) !== undefined;
-      if (w.write === 'public' ||
-         (w.write === 'invite' && invited)) {
-        w.canWrite = true;
+    Chapter.find({
+      'created': {
+        '$gte': new Date().getTime() - 259200000
       }
-      w.inviteAccepted = invited;
-    });
+    })
+    .where('story').in(_.union(_.pluck(stories, '_id'),
+                               _.pluck(watching, 'story')))
+    .limit(5)
+    .sort('-created')
+    .exec(function(err, chapters) {
+      if (err) {
+        console.error(err);
+      }
 
-    res.render('home', {
-      stories: stories,
-      watching: watching,
-      newInvites: _.where(invites, {accepted: false})
+      watching.forEach(function(w) {
+        var invited = _.find(invites, {
+          story: w.story,
+          accepted: true
+        }) !== undefined;
+        if (w.write === 'public' ||
+           (w.write === 'invite' && invited)) {
+          w.canWrite = true;
+        }
+        w.inviteAccepted = invited;
+      });
+
+      var storyNames = {};
+      stories.forEach(function(story) {
+        storyNames[story._id] = story.title;
+      });
+      watching.forEach(function(watch) {
+        storyNames[watch.story] = watch.title;
+      });
+
+      res.render('home', {
+        stories: stories,
+        watching: watching,
+        newInvites: _.where(invites, {accepted: false}),
+        recentChapters: chapters || [],
+        storyNames: storyNames
+      });
     });
   });
 });
