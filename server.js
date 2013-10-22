@@ -319,7 +319,10 @@ app.get('/read/:id', function(req, res) {
       }, callback);
     },
     function(callback) {
-      Watching.findOne({story: req.params.id}, callback);
+      Watching.findOne({
+        user: userId,
+        story: req.params.id
+      }, callback);
     }
   ],
   function(err, results) {
