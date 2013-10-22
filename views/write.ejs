@@ -50,11 +50,11 @@
 
       <input type="radio" name="environment" value="leave" checked> No changes</input><br>
       <% story.environment.forEach(function(env, i) { %>
-        <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> for <span class="influence">5 Influence</span></input><br>
+        <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> [costs <span class="influence">5 Influence</span>]</input><br>
       <% }); %>
-      <input type="radio" name="environment" value="add"> Add something new for <span class="influence">10 Influence</span></input>
+      <input type="radio" name="environment" value="add"> Random Environment addition [costs <span class="influence">10 Influence</span>]</input>
 
-      <p> Gain Influence by contributing frequently!</p>
+      <p>Your change is applied after you post a new chapter below.</p>
 
     </section>
 
