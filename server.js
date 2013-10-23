@@ -597,7 +597,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
           }
         }
         else {
-          influenceReward = 3;
+          influenceReward = 5;
         }
         user.influence[story.id] += influenceReward;
         user.markModified('influence');
@@ -729,6 +729,10 @@ app.get('/search', ensureAuthenticated, function(req, res) {
   else {
     res.render('search', {results: null});
   }
+});
+
+app.get('/manual', function(req, res) {
+  res.render('manual');
 });
 
 app.get('/watch/:id', ensureAuthenticated, function(req, res) {
