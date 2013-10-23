@@ -121,12 +121,20 @@ ol {
 }
 
 .news {
-  padding: 0 .2em;
+  margin: 0;
+}
+
+.news-item {
+  list-style: none;
 }
 
 .last-hour {
   font-weight: bold;
   background: #E5FFF2;
+}
+
+.last-day {
+  font-weight: bold;
 }
 
 .story {

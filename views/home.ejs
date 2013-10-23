@@ -16,13 +16,27 @@
       <% }); %>
     <% } %>
 
-    <% if (recentChapters.length > 0) { %>
+    <% if (firstRecentChapters.length > 0) { %>
 
       <h2>What's New</h2>
 
-      <ul>
-        <% recentChapters.forEach(function(chapter) { %>
-          <li class="news <%= new Date().getTime() - chapter.created.getTime() < 3600000 ? 'last-hour' : '' %>">
+      <ul class="news">
+        <% firstRecentChapters.forEach(function(chapter) { %>
+          <li class="news-item <%= new Date().getTime() - chapter.created.getTime() < 3600000 ? 'last-hour' : '' %> <%= new Date().getTime() - chapter.created.getTime() < 86400000 ? 'last-day' : '' %>">
+            New Chapter in
+              <a href="/read/<%= chapter.story %>"><%= storyNames[chapter.story] %></a>
+            by <%= chapter.authorName %>
+          </li>
+        <% }); %>
+      </ul>
+
+    <% } %>
+
+    <% if (restRecentChapters.length > 0) { %>
+
+      <ul class="news more">
+        <% restRecentChapters.forEach(function(chapter) { %>
+          <li class="news-item <%= new Date().getTime() - chapter.created.getTime() < 3600000 ? 'last-hour' : '' %> <%= new Date().getTime() - chapter.created.getTime() < 86400000 ? 'last-day' : '' %>">
             New Chapter in
               <a href="/read/<%= chapter.story %>"><%= storyNames[chapter.story] %></a>
             by <%= chapter.authorName %>

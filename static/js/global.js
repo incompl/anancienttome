@@ -9,4 +9,14 @@ $(function() {
     }
   });
 
+  var $more = $('.more');
+  $more.hide();
+  $moreLink = $('<a href="#" class="more-link">More</div>');
+  $moreLink.on('click', function(e) {
+    e.preventDefault();
+    $moreLink.remove();
+    $more.show();
+  });
+  $more.after($moreLink);
+
 });

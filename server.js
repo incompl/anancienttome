@@ -160,7 +160,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
     })
     .where('story').in(_.union(_.pluck(stories, '_id'),
                                _.pluck(watching, 'story')))
-    .limit(5)
+    .limit(50)
     .sort('-created')
     .exec(function(err, chapters) {
       if (err) {
@@ -187,11 +187,16 @@ app.get('/home', ensureAuthenticated, function(req, res) {
         storyNames[watch.story] = watch.title;
       });
 
+      if (!chapters) {
+        chapters = [];
+      }
+
       res.render('home', {
         stories: stories,
         watching: watching,
         newInvites: _.where(invites, {accepted: false}),
-        recentChapters: chapters || [],
+        firstRecentChapters: _.first(chapters, 5),
+        restRecentChapters: _.rest(chapters, 5),
         storyNames: storyNames
       });
     });
