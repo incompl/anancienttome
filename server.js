@@ -962,7 +962,7 @@ app.get('/rss/:id', function(req, res) {
         });
       });
       res.header('Content-Type', 'application/rss+xml');
-      res.send(400, feed.xml());
+      res.send(200, feed.xml());
     }
     else {
       res.send(404, 'I\'ve never heard of that story...');
