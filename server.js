@@ -738,7 +738,10 @@ app.get('/manual', function(req, res) {
 app.get('/watch/:id', ensureAuthenticated, function(req, res) {
   async.parallel([
     function(callback) {
-      Watching.findOne({story: req.params.id}, callback);
+      Watching.findOne({
+        story: req.params.id,
+        user: req.user.id
+      }, callback);
     },
     function(callback) {
       Story.findOne({_id: req.params.id}, callback);
