@@ -735,6 +735,10 @@ app.get('/manual', function(req, res) {
   res.render('manual');
 });
 
+app.get('/tech', function(req, res) {
+  res.render('tech');
+});
+
 app.get('/watch/:id', ensureAuthenticated, function(req, res) {
   async.parallel([
     function(callback) {

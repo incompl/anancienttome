@@ -14,25 +14,27 @@
   </head>
   <body>
     <header>
-      <div class="wrapper">
-        <h1><a href="/home">An Ancient Tome</a></h1>
-        <p>Collaborative Interactive Fiction</p>
+      <div id="main-title">
+        <div class="wrapper">
+          <h1><a href="/home">An Ancient Tome</a></h1>
+          <p>Collaborative Interactive Fiction</p>
+        </div>
       </div>
+      <nav id="main-nav">
+        <div class="wrapper">
+          <% if (!user) { %>
+            <a href="/auth/twitter">Log in with Twitter</a>
+          <% } else { %>
+            <a href="/home">Home</a>
+            <a href="/search">Search</a>
+            <a href="/random">Random</a>
+            <a href="/manual">Manual</a>
+            <a href="/account"><%= user.name %></a>
+            <a href="/logout">Log out</a>
+          <% } %>
+        </div>
+      </nav>
     </header>
-    <nav id="main-nav">
-      <div class="wrapper">
-        <% if (!user) { %>
-          <a href="/auth/twitter">Log in with Twitter</a>
-        <% } else { %>
-          <a href="/home">Home</a>
-          <a href="/search">Search</a>
-          <a href="/random">Random</a>
-          <a href="/manual">Manual</a>
-          <a href="/account"><%= user.name %></a>
-          <a href="/logout">Log out</a>
-        <% } %>
-      </div>
-    </nav>
     <% if (info) { %>
       <% info.forEach(function(msg) { %>
         <div class="flash">
@@ -67,8 +69,9 @@
     </div>
     <footer>
       <a href="http://incompl.com">About me</a> |
+      <a href="http://twitter.com/AnAncientTome">@AnAncientTome</a> |
       <a href="https://github.com/incompl/stories/issues">Report a problem</a> |
-      Happy? Sad? <a href="https://twitter.com/intent/tweet?text=%40_gsmith&source=webclient">Let me know on Twitter!</a>
+      <a href="/tech">Open Source</a>
     </footer>
   </body>
 </html>
