@@ -497,7 +497,7 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
     else {
       res.render('write', {
         story: story,
-        lastChapter: formatChapters([lastChapter]),
+        lastChapter: formatChapters(lastChapter ? [lastChapter] : []),
         influence: influence
       });
     }
@@ -523,13 +523,23 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
     },
     function(callback) {
       Invite.find({invited: req.user.name}, callback);
+    },
+    function(callback) {
+      Chapter.findOne({
+        story: req.params.id,
+        author: req.user.id
+      }, callback)
+      .sort('-created');
     }
   ],
   function(err, results) {
     var story = results[0];
     var user = results[1];
     var invites = results[2];
+    var lastChapter = results[3];
+    var lastChapterRecency;
     var chapter;
+    var influenceReward;
     if (err) {
       req.flash('error', 'There has been an error.');
       res.redirect('/write/' + req.params.id);
@@ -568,12 +578,35 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
 
       // Leave Environment the same
       if (!req.body.environment || req.body.environment === 'leave') {
-        user.influence[story.id] += 3;
+        if (lastChapter) {
+          lastChapterRecency = new Date().getTime() - lastChapter.created.getTime();
+          if (lastChapterRecency < 12 * 60 * 60 * 1000) {
+            influenceReward = 0;
+          }
+          else if (lastChapterRecency < 36 * 60 * 60 * 1000) {
+            influenceReward = 5;
+          }
+          else if (lastChapterRecency < 3 * 24 * 60 * 60 * 1000) {
+            influenceReward = 3;
+          }
+          else if (lastChapterRecency < 7 * 24 * 60 * 60 * 1000) {
+            influenceReward = 1;
+          }
+          else {
+            influenceReward = 0;
+          }
+        }
+        else {
+          influenceReward = 3;
+        }
+        user.influence[story.id] += influenceReward;
         user.markModified('influence');
         user.save(function(err) {
           if (err) console.error(err);
         });
-        req.flash('reward', 'You\'ve received 3 Influence!');
+        if (influenceReward > 0) {
+          req.flash('reward', 'You\'ve received ' + influenceReward + ' Influence!');
+        }
       }
 
       // Remove something from the Environment

@@ -2,7 +2,7 @@
 
 <form id="chapter-form" method="post" action="/write/<%= story.id %>/post" class="forms">
 
-  <% if (lastChapter === null) { %>
+  <% if (lastChapter.length < 1) { %>
 
     <h2>It is time for <cite><%= story.title %></cite> to begin...</h2>
 
