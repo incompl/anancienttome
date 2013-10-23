@@ -955,12 +955,13 @@ app.get('/rss/:id', function(req, res) {
         feed.item({
           title: 'A Chapter by ' + chapter.authorName,
           description: chapter.text,
-          url: 'http://anancienttome.com/chapter/' + chapter._id,
+          url: 'http://anancienttome.com/read/' + story._id +
+               '/chapter/' + chapter._id,
           author: chapter.authorName,
           date: chapter.created
         });
       });
-      res.header("Content-Type", "application/rss+xml");
+      res.header('Content-Type', 'application/rss+xml');
       res.send(400, feed.xml());
     }
     else {
