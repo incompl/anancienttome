@@ -23,6 +23,7 @@ console.log('Feels good... Feels right.');
 // Someone else's stuff
 var _ = require('lodash');
 var async = require('async');
+var RSS = require('rss');
 
 // Express stuff
 var express = require('express');
@@ -111,6 +112,7 @@ app.configure(function() {
     res.locals.info = req.flash('info');
     res.locals.error = req.flash('error');
     res.locals.reward = req.flash('reward');
+    res.locals.rss = null;
     next();
   });
   app.use(app.router);
@@ -385,6 +387,10 @@ app.get('/read/:id', function(req, res) {
     var canWrite = story.owner === userId ||
                    story.write === 'public' ||
                    (story.write === 'invite' && invited);
+
+    if (story.read === 'public') {
+      res.locals.rss = '/rss/' + story._id;
+    }
 
     res.render('read', {
       story: story,
@@ -915,6 +921,50 @@ app.get('/random', ensureAuthenticated, function(req, res) {
     }
     else {
       res.redirect('/read/' + story.id);
+    }
+  });
+});
+
+app.get('/rss/:id', function(req, res) {
+
+  async.parallel([
+    function(callback) {
+      Story.findById(req.params.id, callback);
+    },
+    function(callback) {
+      Chapter.find({story: req.params.id}, callback)
+      .limit(10)
+      .sort('-created');
+    }
+  ],
+  function(err, results) {
+    var story = results[0];
+    var chapters = results[1];
+    if (err) {
+      console.error(err);
+    }
+    var canRead = story && story.read === 'public';
+    if (!err && story && canRead) {
+      var feed = new RSS({
+        title: story.title,
+        description: 'You pick up An Ancient Tome...',
+        feed_url: 'http://anancienttome.com/rss/' + req.params.id,
+        site_url: 'http://anancienttome.com'
+      });
+      chapters.forEach(function(chapter) {
+        feed.item({
+          title: 'A Chapter by ' + chapter.authorName,
+          description: chapter.text,
+          url: 'http://anancienttome.com/chapter/' + chapter._id,
+          author: chapter.authorName,
+          date: chapter.created
+        });
+      });
+      res.header("Content-Type", "application/rss+xml");
+      res.send(400, feed.xml());
+    }
+    else {
+      res.send(404, 'I\'ve never heard of that story...');
     }
   });
 });
