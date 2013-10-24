@@ -135,7 +135,6 @@ app.get('/', function(req, res) {
     res.redirect('/home');
   }
   else {
-    res.locals.rss = '/rss/all';
     res.render('index');
   }
 });
@@ -997,8 +996,8 @@ app.get('/rss/all', function(req, res) {
     }
 
     var feed = new RSS({
-      title: 'All Public Stories',
-      description: 'You pick up An Ancient Tome...',
+      title: 'An Ancient Tome',
+      description: 'All Public Stories',
       feed_url: 'http://anancienttome.com/rss/all',
       site_url: 'http://anancienttome.com'
     });
