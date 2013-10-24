@@ -45,7 +45,6 @@ header p {
 h1 {
   margin: 0;
   font-family: 'Libre Baskerville', serif;
-  text-shadow: 1px 1px 0 hsla(0, 0%, 0%, .7);
 }
 
 h2 {
@@ -139,7 +138,7 @@ ol {
 
 .last-hour {
   font-weight: bold;
-  background: #E5FFF2;
+  background: #F1E6DE;
 }
 
 .last-day {

@@ -130,8 +130,14 @@ function ensureAuthenticated(req, res, next) {
   res.redirect('/');
 }
 
-app.get('/', function(req, res){
-  res.render('index');
+app.get('/', function(req, res) {
+  if (req.isAuthenticated()) {
+    res.redirect('/home');
+  }
+  else {
+    res.locals.rss = '/rss/all';
+    res.render('index');
+  }
 });
 
 app.get('/home', ensureAuthenticated, function(req, res) {
@@ -163,7 +169,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
     .where('story').in(_.union(_.pluck(stories, '_id'),
                                _.pluck(watching, 'story')))
     .limit(50)
-    .sort('-created')
+    .sort({'created': -1})
     .exec(function(err, chapters) {
       if (err) {
         console.error(err);
@@ -529,7 +535,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
         story: req.params.id,
         author: req.user.id
       }, callback)
-      .sort('-created');
+      .sort({'created': -1});
     }
   ],
   function(err, results) {
@@ -969,6 +975,77 @@ app.get('/random', ensureAuthenticated, function(req, res) {
   });
 });
 
+app.get('/rss/all', function(req, res) {
+
+  var stories = {};
+
+  async.parallel([
+    function(callback) {
+      Chapter.find({}, null, {
+        limit: 30,
+        sort: {'created': -1}
+      }, callback);
+    }
+  ],
+  function(err, results) {
+    var chapters = results[0];
+
+    if (err) {
+      console.error(err);
+      res.send(404, 'Something is amiss...');
+      return;
+    }
+
+    var feed = new RSS({
+      title: 'All Public Stories',
+      description: 'You pick up An Ancient Tome...',
+      feed_url: 'http://anancienttome.com/rss/all',
+      site_url: 'http://anancienttome.com'
+    });
+
+    var stories = {};
+    chapters.forEach(function(chapter) {
+      stories[chapter.story] = true;
+    });
+
+    var loadStories = [];
+    _.keys(stories).forEach(function(storyId) {
+      loadStories.push(function(callback) {
+        Story.findById(storyId, callback);
+      });
+    });
+
+    async.parallel(loadStories, function(err, results) {
+      if (err) {
+        console.error(err);
+        res.send(404, 'Something is amiss...');
+        return;
+      }
+      results.forEach(function(story) {
+        stories[story._id] = story;
+      });
+      var i = 0;
+      chapters.forEach(function(chapter) {
+        var story = stories[chapter.story];
+        if (i < 10 && story.read === 'public') {
+          i++;
+          feed.item({
+            title: story.title,
+            description: chapter.text,
+            url: 'http://anancienttome.com/read/' + story._id +
+                 '/chapter/' + chapter._id,
+            author: chapter.authorName,
+            date: chapter.created
+          });
+        }
+      });
+      res.header('Content-Type', 'application/rss+xml');
+      res.send(200, feed.xml());
+    });
+
+  });
+});
+
 app.get('/rss/:id', function(req, res) {
 
   async.parallel([
@@ -978,7 +1055,7 @@ app.get('/rss/:id', function(req, res) {
     function(callback) {
       Chapter.find({story: req.params.id}, callback)
       .limit(10)
-      .sort('-created');
+      .sort({'created': -1});
     }
   ],
   function(err, results) {
