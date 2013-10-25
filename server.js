@@ -113,6 +113,7 @@ app.configure(function() {
     res.locals.error = req.flash('error');
     res.locals.reward = req.flash('reward');
     res.locals.rss = null;
+    res.locals.title = 'An Ancient Tome';
     next();
   });
   app.use(app.router);
@@ -167,8 +168,8 @@ app.get('/home', ensureAuthenticated, function(req, res) {
     })
     .where('story').in(_.union(_.pluck(stories, '_id'),
                                _.pluck(watching, 'story')))
-    .limit(50)
     .sort({'created': -1})
+    .limit(50)
     .exec(function(err, chapters) {
       if (err) {
         console.error(err);
@@ -346,7 +347,13 @@ app.get('/read/:id', function(req, res) {
       Story.findById(req.params.id, callback);
     },
     function(callback) {
-      Chapter.find({story: req.params.id}, callback);
+      Chapter.find({
+        story: req.params.id
+      }, null, {
+        sort: {
+          created: 1
+        }
+      }, callback);
     },
     function(callback) {
       Invite.findOne({
@@ -396,6 +403,8 @@ app.get('/read/:id', function(req, res) {
     if (story.read === 'public') {
       res.locals.rss = '/rss/' + story._id;
     }
+
+    res.locals.title = story.title + ' | An Ancient Tome';
 
     res.render('read', {
       story: story,
@@ -533,8 +542,7 @@ app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
       Chapter.findOne({
         story: req.params.id,
         author: req.user.id
-      }, callback)
-      .sort({'created': -1});
+      }, null, {sort: {created: -1}}, callback);
     }
   ],
   function(err, results) {
@@ -1052,9 +1060,13 @@ app.get('/rss/:id', function(req, res) {
       Story.findById(req.params.id, callback);
     },
     function(callback) {
-      Chapter.find({story: req.params.id}, callback)
-      .limit(10)
-      .sort({'created': -1});
+      Chapter.find({story: req.params.id}, null,
+      {
+        limit: 10,
+        sort: {
+          created: -1
+        }
+      }, callback);
     }
   ],
   function(err, results) {
