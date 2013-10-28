@@ -512,18 +512,28 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
       res.render('write', {
         story: story,
         lastChapter: formatChapters(lastChapter ? [lastChapter] : []),
-        influence: influence
+        influence: influence,
+        chapter: req.flash('chapter')
       });
     }
   });
 });
 
-app.post('/write/:id/post', ensureAuthenticated, function(req, res) {
+app.post('/write/:id', ensureAuthenticated, function(req, res) {
+
+  // Save your work if your post fails and you're redirected back
+  req.flash('chapter', req.body.chapter);
+
+  if (req.body.chapter.length > 5000) {
+    req.flash('error', 'Your chapter is too long!');
+    res.redirect('/write/' + req.params.id);
+    return;
+  }
 
   var matches = req.body.chapter.match(/\w+/g);
 
   if (!matches || matches.length < 10 || matches.length > 200) {
-    req.flash('error', 'You need at least 10 words and less than 200 words.');
+    req.flash('error', 'You need at least 10 words and no more than 200 words.');
     res.redirect('/write/' + req.params.id);
     return;
   }
