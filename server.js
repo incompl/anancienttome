@@ -465,6 +465,10 @@ app.get('/read/:story/chapter/:id', function(req, res) {
                   story.read === 'public' ||
                   (story.read === 'invite' && invited);
 
+    var canWrite = story.owner === userId ||
+                   story.write === 'public' ||
+                   (story.write === 'invite' && invited);
+
     if (!canRead) {
       req.flash('error', 'You must be invited to read this tale.');
       res.redirect('/home');
@@ -473,7 +477,8 @@ app.get('/read/:story/chapter/:id', function(req, res) {
 
     res.render('chapter', {
       story: story,
-      chapters: formatChapters(chapters)
+      chapters: formatChapters(chapters),
+      canWrite: canWrite
     });
   });
 });

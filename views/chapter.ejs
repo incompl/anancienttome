@@ -26,7 +26,13 @@
 
     <% }); %>
 
-    <p><a href="/read/<%= story.id %>">Read More</a></p>
+    <p>
+      <a href="/read/<%= story.id %>">Full Story</a>
+
+      <% if (canWrite) { %>
+        | <a href="/write/<%= story.id %>">Write the next chapter...</a>
+      <% } %>
+    </p>
 
   </div>
 
