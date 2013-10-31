@@ -14,7 +14,7 @@ $(function() {
     var length;
     var result;
     var valid;
-    var matches = $chapter.val().match(/\w+/g);
+    var matches = $chapter.val().match(/[\w']+/g);
     if (matches === null) {
       length = 0;
     }

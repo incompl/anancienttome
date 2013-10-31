@@ -535,7 +535,7 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
     return;
   }
 
-  var matches = req.body.chapter.match(/\w+/g);
+  var matches = req.body.chapter.match(/[\w']+/g);
 
   if (!matches || matches.length < 10 || matches.length > 200) {
     req.flash('error', 'You need at least 10 words and no more than 200 words.');
