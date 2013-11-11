@@ -77,7 +77,7 @@ passport.use(new TwitterStrategy({
       else {
         var user = new User({
           id: profile.id,
-          name: profile.username,
+          name: profile.username.toLowerCase(),
           twitterConsumerKey: token,
           twitterConsumerSecret: tokenSecret,
           influence: {}
@@ -149,7 +149,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
       Watching.find({user: req.user.id}, callback);
     },
     function(callback) {
-      Invite.find({invited: req.user.name}, callback);
+      Invite.find({invited: req.user.name.toLowerCase()}, callback);
     }
   ],
   function(err, results) {
@@ -358,7 +358,7 @@ app.get('/read/:id', function(req, res) {
     function(callback) {
       Invite.findOne({
         story: req.params.id,
-        invited: userName,
+        invited: userName.toLowerCase(),
         accepted: true
       }, callback);
     },
@@ -440,7 +440,7 @@ app.get('/read/:story/chapter/:id', function(req, res) {
     function(callback) {
       Invite.findOne({
         story: req.params.story,
-        invited: userId,
+        invited: userId.toLowerCase(),
         accepted: true
       }, callback);
     }
@@ -551,7 +551,7 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
       User.findById(req.user._id, callback);
     },
     function(callback) {
-      Invite.find({invited: req.user.name}, callback);
+      Invite.find({invited: req.user.name.toLowerCase()}, callback);
     },
     function(callback) {
       Chapter.findOne({
@@ -865,12 +865,12 @@ app.get('/invite/:id', ensureAuthenticated, function(req, res) {
 app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
   async.parallel([
     function(callback) {
-      User.findOne({name: req.body.name}, callback);
+      User.findOne({name: req.body.name.toLowerCase()}, callback);
     },
     function(callback) {
       Invite.findOne({
         inviter: req.user.id,
-        invited: req.body.name,
+        invited: req.body.name.toLowerCase(),
         story: req.params.id
       }, callback);
     },
@@ -909,7 +909,7 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
     else {
       newInvite = new Invite({
         inviter: req.user.id,
-        invited: req.body.name,
+        invited: req.body.name.toLowerCase(),
         story: req.params.id,
         title: story.title,
         theme: story.theme,
@@ -934,7 +934,7 @@ app.post('/invite/:id/post', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/invite/accept/:id', ensureAuthenticated, function(req, res) {
-  Invite.findOne({_id: req.params.id, invited: req.user.name}, function(err, invite) {
+  Invite.findOne({_id: req.params.id, invited: req.user.name.toLowerCase()}, function(err, invite) {
     if (err) {
       console.error(err);
       req.flash('error', 'Couldn\'t find that invite...');
@@ -973,7 +973,7 @@ app.get('/invite/accept/:id', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/invite/reject/:id', ensureAuthenticated, function(req, res) {
-  Invite.remove({_id: req.params.id, invited: req.user.name}, function(err, invite) {
+  Invite.remove({_id: req.params.id, invited: req.user.name.toLowerCase()}, function(err, invite) {
     if (err) {
       console.error(err);
       req.flash('error', 'Something went wrong!');
