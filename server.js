@@ -117,7 +117,8 @@ app.configure(function() {
     next();
   });
   app.use(app.router);
-  app.use(express.static(__dirname + '/static'));
+  var oneDay = 86400000;
+  app.use(express.static(__dirname + '/static', {maxAge: oneDay}));
   app.use(express.logger());
 });
 
