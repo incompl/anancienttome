@@ -169,6 +169,7 @@ app.get('/home', ensureAuthenticated, function(req, res) {
     })
     .where('story').in(_.union(_.pluck(stories, '_id'),
                                _.pluck(watching, 'story')))
+    .where('author').ne(req.user.id)
     .sort({'created': -1})
     .limit(50)
     .exec(function(err, chapters) {
