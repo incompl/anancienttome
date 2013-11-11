@@ -708,6 +708,7 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
           res.redirect('/home');
         }
         newChapter.onCreate();
+        req.flash('chapter', '');
         req.flash('info', 'A new chapter has been written...');
         res.redirect('/read/' + req.params.id);
       });
