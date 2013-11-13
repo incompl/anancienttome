@@ -1,46 +1,50 @@
 <% layout('layout') -%>
 
-<h2>Find a story by title</h2>
+<div id="search">
 
-<form class="forms" method="get" action="/search">
+  <h2>Find a story by title</h2>
 
-  <p class="forms-inline">
-    <span class="btn-group">
-      <input name="query" type="text" size="25" class="input-search">
-      <button class="btn btn-round">Search</button>
-    </span>
-  </p>
+  <form class="forms" method="get" action="/search">
 
-  <% if (results) { %>
+    <p class="forms-inline">
+      <span class="btn-group">
+        <input name="query" type="text" size="25" class="input-search">
+        <button class="btn btn-round">Search</button>
+      </span>
+    </p>
 
-    <% if (results.length < 1) { %>
+    <% if (results) { %>
 
-      <p>No results</p>
+      <% if (results.length < 1) { %>
 
-    <% } else { %>
+        <p>No results</p>
 
-      <table class="width-100 table-striped">
+      <% } else { %>
 
-      <% results.forEach(function(story) { %>
+        <table class="width-100 table-striped">
 
-        <tr>
-          <td><a href="/read/<%= story.id %>"><%= story.title %></a></td>
-          <td><%= story.theme %></td>
-          <td>
-            <% if (story.write === 'public') { %>
-              Anyone can contribute
-            <% } else { %>
-              Contributions by invitation only
-            <% } %>
-          </td>
-        </tr>
+        <% results.forEach(function(story) { %>
 
-      <% }); %>
+          <tr>
+            <td><a href="/read/<%= story.id %>"><%= story.title %></a></td>
+            <td><%= story.theme %></td>
+            <td>
+              <% if (story.write === 'public') { %>
+                Anyone can contribute
+              <% } else { %>
+                Contributions by invitation only
+              <% } %>
+            </td>
+          </tr>
 
-    </table>
+        <% }); %>
+
+      </table>
+
+      <% } %>
 
     <% } %>
 
-  <% } %>
+  </form>
 
-</form>
+</div>

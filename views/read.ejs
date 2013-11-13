@@ -54,7 +54,7 @@
     </div>
 
     <% if (user && watching) { %>
-      You are watching this story. <a href="/unwatch/<%= story.id %>">Unwatch</a>
+      <p>You are watching this story. <a href="/unwatch/<%= story.id %>">Unwatch</a></p>
     <% } %>
     <% if (story.read === 'public') { %>
       <p>This story is public. You can share the URL.</p>

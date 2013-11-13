@@ -25,7 +25,7 @@
           <li class="news-item <%= new Date().getTime() - chapter.created.getTime() < 3600000 ? 'last-hour' : '' %> <%= new Date().getTime() - chapter.created.getTime() < 86400000 ? 'last-day' : '' %>">
             <a href="/read/<%= chapter.story %>/chapter/<%= chapter._id %>">New Chapter</a> in
               <a href="/read/<%= chapter.story %>"><%= storyNames[chapter.story] %></a>
-            by <%= chapter.authorName %>
+            by <a href="http://twitter.com/<%= chapter.authorName %>"><%= chapter.authorName %></a>
           </li>
         <% }); %>
       </ul>
@@ -55,7 +55,7 @@
     <% } %>
 
     <% stories.forEach(function(story) { %>
-    
+
       <section class="story">
         <h3><%= story.title %></h3>
 
@@ -75,7 +75,7 @@
           <% } else { %>
             <span>Only you can write</span>
           <% } %>
-          
+
         </div>
 
         <a href="/read/<%= story.id %>" class="btn btn-black">Read</a>
@@ -84,7 +84,7 @@
         <% if (story.write === 'invite') { %>
           <a href="/invite/<%= story.id %>" class="btn btn-purple">Invite</a>
         <% } %>
-        
+
         <a href="/delete/<%= story.id %>" class="btn btn-red confirm">Delete</a>
       </section>
 
@@ -99,7 +99,7 @@
     <% } %>
 
     <% watching.forEach(function(watching) { %>
-    
+
       <section class="story">
         <h3><%= watching.title %></h3>
 
@@ -112,7 +112,7 @@
               You can only read
             <% } %>
           </span>
-          
+
           <% if (watching.inviteAccepted) { %>
             <span>Invited</span>
           <% } %>

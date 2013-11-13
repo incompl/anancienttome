@@ -1,9 +1,15 @@
 <% layout('layout') -%>
 
-<h2>Your Account</h2>
+<div class="units-row">
+  <div class="unit-centered unit-70">
 
-<p>You're signed in as <%= user.name %>.</p>
+    <h2>Your Account</h2>
 
-<p>In the future useful account settings might appear here, but for now all you can do is delete your account.</p>
+    <p>You're signed in as <%= user.name %>.</p>
 
-<a href="/account/delete" class="btn btn-red confirm">Delete my account</a>
+    <p>In the future useful account settings might appear here, but for now all you can do is delete your account.</p>
+
+    <a href="/account/delete" class="btn btn-red confirm">Delete my account</a>
+
+  </div>
+</div>
