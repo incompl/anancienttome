@@ -420,6 +420,7 @@ app.get('/read/:id', function(req, res) {
 
 app.get('/read/:story/chapter/:id', function(req, res) {
   var userId;
+  var userName = null;
 
   if (!req.isAuthenticated()) {
     req.user = null;
@@ -427,6 +428,7 @@ app.get('/read/:story/chapter/:id', function(req, res) {
   }
   else {
     userId = req.user.id;
+    userName = req.user.name.toLowerCase();
   }
 
   async.parallel([
@@ -442,7 +444,7 @@ app.get('/read/:story/chapter/:id', function(req, res) {
     function(callback) {
       Invite.findOne({
         story: req.params.story,
-        invited: userId.toLowerCase(),
+        invited: userName,
         accepted: true
       }, callback);
     }
