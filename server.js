@@ -356,7 +356,7 @@ app.get('/read/:id', function(req, res) {
     function(callback) {
       Invite.findOne({
         story: req.params.id,
-        invited: userName.toLowerCase(),
+        invited: userName ? userName.toLowerCase() : null,
         accepted: true
       }, callback);
     },
