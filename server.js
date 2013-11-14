@@ -231,10 +231,6 @@ app.get('/account/delete', ensureAuthenticated, function(req, res) {
   });
 });
 
-app.get('/login', function(req, res){
-  res.render('login');
-});
-
 app.get('/auth/twitter',
   passport.authenticate('twitter'),
   function(req, res) {});
@@ -1119,6 +1115,31 @@ app.get('/rss/:id', function(req, res) {
     else {
       res.send(404, 'I\'ve never heard of that story...');
     }
+  });
+});
+
+app.get('/info', function(req, res) {
+  async.parallel([
+    function(callback) {
+      User.find().count(callback);
+    },
+    function(callback) {
+      Chapter.find().count(callback);
+    },
+    function(callback) {
+      Story.find().count(callback);
+    }
+  ],
+  function(err, results) {
+    if (err) {
+      console.error(err);
+    }
+
+    res.render('info', {
+      userCount: results[0] || '?',
+      chapterCount: results[1] || '?',
+      storyCount: results[2] || '?'
+    });
   });
 });
 
