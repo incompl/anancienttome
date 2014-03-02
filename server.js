@@ -9,21 +9,23 @@ if (envFileExists) {
   require(envFilePath);
 }
 
-// Themes
-var themes = {
-  'Medieval Fantasy': require('./themes/MedievalFantasy'),
-  'Science Fiction': require('./themes/ScienceFiction')
-};
-
-console.log('Flexing the Theme muscles...');
-console.log(themes['Medieval Fantasy'].generate());
-console.log(themes['Science Fiction'].generate());
-console.log('Feels good... Feels right.');
-
 // Someone else's stuff
 var _ = require('lodash');
 var async = require('async');
 var RSS = require('rss');
+
+// Themes
+var themes = {
+  'Medieval Fantasy': require('./themes/MedievalFantasy'),
+  'Science Fiction': require('./themes/ScienceFiction'),
+  'Horror': require('./themes/Horror')
+};
+
+console.log('Flexing the Theme muscles...');
+_.values(themes).forEach(function(theme) {
+  console.log(theme.generate());
+});
+console.log('Feels good... Feels right.');
 
 // Express stuff
 var express = require('express');
@@ -253,6 +255,8 @@ app.get('/new', ensureAuthenticated, function(req, res) {
 app.post('/new/post', ensureAuthenticated, function(req, res) {
   var success = true;
 
+  var validLengths = [5, 10, 20];
+
   if (!req.body.title) {
     success = false;
     req.flash('error', 'You need a title!');
@@ -264,6 +268,10 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
   else if (req.body.title.length > 80) {
     success = false;
     req.flash('error', 'Your title needs to be shorter!');
+  }
+  else if (!_.contains(validLengths, Number(req.body.numChapters))) {
+    success = false;
+    req.flash('error', 'Please choose a story length!');
   }
 
   if (!_.contains(Object.keys(themes), req.body.theme)) {
@@ -298,7 +306,8 @@ app.post('/new/post', ensureAuthenticated, function(req, res) {
       theme: req.body.theme,
       read: req.body.read,
       write: req.body.write,
-      environment: [themes[req.body.theme].generate()]
+      environment: [themes[req.body.theme].generate()],
+      chaptersLeft: Number(req.body.numChapters)
     });
     story.save(function (err, newStory) {
       if (err) {
@@ -369,6 +378,7 @@ app.get('/read/:id', function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
+    story.updateSchema();
     var chapters = results[1];
     var invited = results[2] !== null;
     var watching = results[3] !== null;
@@ -447,6 +457,7 @@ app.get('/read/:story/chapter/:id', function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
+    story.updateSchema();
     var chapters = results[1];
     var invited = results[2] !== null;
     if (err) {
@@ -500,10 +511,10 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
+    story.updateSchema();
     var lastChapter = results[1];
     var user = results[2];
-    // TODO remove this line after a db cleanup
-    if (!user.influence) user.influence = {};
+    user.updateSchema();
     var influence = user.influence[story.id];
     if (err) {
       req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
@@ -562,12 +573,15 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
+    story.updateSchema();
     var user = results[1];
     var invites = results[2];
     var lastChapter = results[3];
     var lastChapterRecency;
     var chapter;
     var influenceReward;
+    var freeChapter = false;
+
     if (err) {
       req.flash('error', 'There has been an error.');
       res.redirect('/write/' + req.params.id);
@@ -602,6 +616,13 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
       if (typeof user.influence[story.id] !== 'number' ||
           isNaN(user.influence[story.id])) {
         user.influence[story.id] = 0;
+      }
+
+      // Make sure there are chapters chaptersLeft
+      if (story.chaptersLeft < 1) {
+        req.flash('error', 'This story is already complete.');
+        res.redirect('/write/' + req.params.id);
+        return;
       }
 
       // Leave Environment the same
@@ -688,6 +709,24 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
         }
       }
 
+      // Free chapter
+      else if (req.body.environment === 'freeChapter') {
+        if (user.influence[story.id] < 15) {
+          req.flash('error', 'You don\'t have enough Influence!');
+          res.redirect('/write/' + req.params.id);
+          return;
+        }
+        else {
+          freeChapter = true;
+          user.influence[story.id] -= 15;
+          user.markModified('influence');
+          user.save(function(err) {
+            if (err) console.error(err);
+          });
+          req.flash('reward', 'Paid 15 Influence for a free chapter');
+        }
+      }
+
       // Invalid Environment request
       else {
         req.flash('error', 'Invalid Environment. Maybe it changed, try again?');
@@ -702,12 +741,29 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
         created: new Date(),
         text: req.body.chapter
       });
-      chapter.save(function (err, newChapter) {
+
+      async.series([
+        function(callback) {
+          chapter.save(callback);
+        },
+        function(callback) {
+          if (!freeChapter) {
+            story.chaptersLeft--;
+            story.save(callback);
+          }
+          else {
+            callback();
+          }
+        }
+      ],
+      function(err, results) {
+        var newChapter = results[0];
         if (err) {
           req.flash('error', 'Sorry, I couldn\'t save it. Try again?');
           res.redirect('/home');
+          return;
         }
-        newChapter.onCreate();
+        chapter.onCreate();
         req.flash('chapter', '');
         req.flash('info', 'A new chapter has been written...');
         res.redirect('/read/' + req.params.id);

@@ -16,9 +16,19 @@
 
     <p><a href="/read/<%= story.id %>">Back to "<%= story.title %>"</a></p>
 
-    <h2>Write the next chapter</h2>
+    <% if (story.chaptersLeft > 1) { %>
+      <h2>Write the next chapter</h2>
+    <% } else if (story.chaptersLeft === 1) { %>
+      <h2>Write the final chapter</h2>
+    <% } else { %>
+      <h2>This story is complete</h2>
+    <% } %>
 
-    <h3>Previous chapter</h3>
+    <% if (story.chaptersLeft > 0) { %>
+      <h3>Previous chapter</h3>
+    <% } else { %>
+      <h3>Final chapter</h3>
+    <% } %>
 
     <% lastChapter.forEach(function(chapter, i) { %>
 
@@ -38,42 +48,59 @@
 
     <% }); %>
 
-    <h3>The Environment</h3>
+    <% if (story.chaptersLeft > 0) { %>
 
-    <section>
+      <h3>The Environment</h3>
 
-      <% if (story.environment.length === 0) { %>
-        <p class="environment">Nothing unusual at this time.</p>
-      <% } %>
+      <section>
 
-      <ol>
-        <% story.environment.forEach(function(env) { %>
-          <li class="environment"><%= env %></li>
+        <% if (story.environment.length === 0) { %>
+          <p class="environment">Nothing unusual at this time.</p>
+        <% } %>
+
+        <ol>
+          <% story.environment.forEach(function(env) { %>
+            <li class="environment"><%= env %></li>
+          <% }); %>
+        </ol>
+
+        <p>You have <span class="influence"><%= influence || 0 %> Influence</span>.</p>
+
+        <input type="radio" name="environment" value="leave" checked> No changes</input><br>
+
+        <% story.environment.forEach(function(env, i) { %>
+          <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> [costs <span class="influence">5 Influence</span>]</input><br>
         <% }); %>
-      </ol>
 
-      <p>You have <span class="influence"><%= influence || 0 %> Influence</span>.</p>
+        <input type="radio" name="environment" value="add"> Random Environment addition [costs <span class="influence">10 Influence</span>]</input><br>
 
-      <input type="radio" name="environment" value="leave" checked> No changes</input><br>
-      <% story.environment.forEach(function(env, i) { %>
-        <input type="radio" name="environment" value="remove-<%= i + 1 %>"> Remove #<%= i + 1 %> [costs <span class="influence">5 Influence</span>]</input><br>
-      <% }); %>
-      <input type="radio" name="environment" value="add"> Random Environment addition [costs <span class="influence">10 Influence</span>]</input>
+        <input type="radio" name="environment" value="freeChapter"> Free chapter (won't reduce chapters remaining) [costs <span class="influence">15 Influence</span>]</input>
 
-      <p>Your change is applied after you post a new chapter below.</p>
+        <p>Your change is applied after you post a new chapter below.</p>
 
-    </section>
+      </section>
 
-    <h3>And now, a dramatic continuation...</h3>
+      <h3>And now, a dramatic continuation...</h3>
+    <% } %>
 
   <% } %>
 
-  <label>
-    <textarea id="chapter" name="chapter" rows="10" class="width-100"><%= chapter %></textarea>
-    <span id="char-limit"></span>
-  </label>
+  <% if (story.chaptersLeft > 0) { %>
 
-  <input type="submit" class="btn btn-blue btn-big" value="Save">
+    <% if (story.chaptersLeft > 1) { %>
+      <p><%= story.chaptersLeft %> chapters remaining.</p>
+    <% } else if (story.chaptersLeft === 1) { %>
+      <p>You are writing the final chapter.</p>
+      <p>If you don't want this to be the final chapter, you must pay Influence now to get a free chapter. You cannot do this after the story is complete.</p>
+    <% } %>
+
+    <label>
+      <textarea id="chapter" name="chapter" rows="10" class="width-100"><%= chapter %></textarea>
+      <span id="char-limit"></span>
+    </label>
+
+    <input type="submit" class="btn btn-blue btn-big" value="Save">
+  <% } %>
 
 </form>
 

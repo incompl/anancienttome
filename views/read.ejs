@@ -32,15 +32,29 @@
 
     <% }); %>
 
-
     <% if (canWrite) { %>
-      <div class="chapter-links"><a href="/write/<%= story.id %>">
-        <% if (chapters.length < 1) { %>
-          Write the first chapter...
-        <% } else { %>
-          Write the next chapter...
-        <% } %>
-      </a></div>
+      <div class="chapter-links">
+        <p>
+          <% if (story.chaptersLeft > 1) { %>
+            <%= story.chaptersLeft %> chapters remaining.
+          <% } else if (story.chaptersLeft === 1) { %>
+            1 chapter remaining.
+          <% } else { %>
+            This story is complete.
+          <% } %>
+        </p>
+        <p>
+          <a href="/write/<%= story.id %>">
+            <% if (story.chaptersLeft > 0) { %>
+              <% if (chapters.length === 0) { %>
+                Write the next chapter...
+              <% } else { %>
+                Write the first chapter...
+              <% } %>
+            <% } %>
+          </a>
+        </p>
+      </div>
     <% } %>
 
   </div>

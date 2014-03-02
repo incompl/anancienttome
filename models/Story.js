@@ -8,8 +8,20 @@ var storySchema = mongoose.Schema({
   theme: String,
   read: String,
   write: String,
-  environment: [String]
+  environment: [String],
+  chaptersLeft: Number
 });
+
+storySchema.methods.updateSchema = function() {
+  if (typeof this.chaptersLeft !== 'number') {
+    this.chaptersLeft = 3;
+    this.save(function(err) {
+      if (err) {
+        console.error(err);
+      }
+    });
+  }
+};
 
 storySchema.methods.onCreate = function() {
   console.log(this.title + ' has begun.');
