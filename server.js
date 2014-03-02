@@ -18,7 +18,7 @@ var RSS = require('rss');
 var themes = {
   'Medieval Fantasy': require('./themes/MedievalFantasy'),
   'Science Fiction': require('./themes/ScienceFiction'),
-  'Horror': require('./themes/Horror')
+  'Supernatural Horror': require('./themes/SupernaturalHorror')
 };
 
 console.log('Flexing the Theme muscles...');
