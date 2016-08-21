@@ -8,9 +8,9 @@
   "scripts": {
     "start": "node server.js"
   },
-  "version": "1.0.0-1",
+  "version": "1.0.0",
   "engines": {
-    "node": "0.10.x"
+    "node": "5.10.1"
   },
   "dependencies": {
     "express": "~3.4.0",
