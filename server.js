@@ -378,7 +378,6 @@ app.get('/read/:id', function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
-    story.updateSchema();
     var chapters = results[1];
     var invited = results[2] !== null;
     var watching = results[3] !== null;
@@ -457,7 +456,6 @@ app.get('/read/:story/chapter/:id', function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
-    story.updateSchema();
     var chapters = results[1];
     var invited = results[2] !== null;
     if (err) {
@@ -511,10 +509,8 @@ app.get('/write/:id', ensureAuthenticated, function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
-    story.updateSchema();
     var lastChapter = results[1];
     var user = results[2];
-    user.updateSchema();
     var influence = user.influence[story.id];
     if (err) {
       req.flash('error', 'Hmm, seems to be missing a few pages. Try again?');
@@ -573,7 +569,6 @@ app.post('/write/:id', ensureAuthenticated, function(req, res) {
   ],
   function(err, results) {
     var story = results[0];
-    story.updateSchema();
     var user = results[1];
     var invites = results[2];
     var lastChapter = results[3];
