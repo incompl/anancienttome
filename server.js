@@ -1199,6 +1199,6 @@ app.get('/info', function(req, res) {
   });
 });
 
-var port = 8080;
+var port = 80;
 app.listen(port);
 console.info('Listening on ' + port + '. heck ya');
