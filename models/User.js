@@ -10,12 +10,6 @@ var userSchema = mongoose.Schema({
   influence: Object
 });
 
-userSchema.methods.updateSchema = function() {
-  if (!this.influence) {
-    this.influence = {};
-  }
-};
-
 userSchema.methods.onCreate = function() {
   console.log(this.name + ' was created. dang!');
 };
